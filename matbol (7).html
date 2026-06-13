@@ -1,0 +1,3181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Mat-Bol — Matematik Futbolu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-1: #080f1a;
+  --bg-2: #0d1c2e;
+  --bg-3: #142540;
+  --surface: rgba(255,255,255,0.055);
+  --surface-2: rgba(255,255,255,0.10);
+  --surface-border: rgba(255,255,255,0.09);
+  --field-dark: #1a5c2d;
+  --field-light: #1f6e34;
+  --line: rgba(255,255,255,0.75);
+  --ink: #f0f4fa;
+  --ink-dim: #7a96b8;
+  --ink-soft: #b8cce0;
+  --accent: #f9e000;
+  --accent-2: #d4b800;
+  --red: #f04040;
+  --red-2: #a81818;
+  --blue: #3b8cf8;
+  --blue-2: #1a50c0;
+  --orange: #ff8c30;
+  --orange-2: #b85500;
+  --green: #20d060;
+  --green-2: #0f8030;
+  --purple: #b060f8;
+  --display: 'Bebas Neue', impact, sans-serif;
+  --body: 'DM Sans', system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  overflow: hidden; width: 100%; height: 100%;
+  user-select: none; -webkit-user-select: none;
+}
+
+body {
+  font-family: var(--body);
+  background: var(--bg-1);
+  color: var(--ink);
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  max-width: 480px;
+  margin: 0 auto;
+  /* Stadium floodlight atmosphere */
+  background:
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(30,80,160,0.45) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 20% 100%, rgba(10,60,30,0.30) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 80% 100%, rgba(10,60,30,0.30) 0%, transparent 50%),
+    linear-gradient(180deg, #0b1628 0%, #080f1a 100%);
+}
+
+/* Subtle pitch-line grid overlay on entire app */
+#app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 32px 32px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.screen {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  overflow: hidden; padding: 16px;
+  z-index: 1;
+}
+.screen.active { display: flex; }
+
+/* ===== MAIN MENU ===== */
+#screen-menu {
+  justify-content: center; align-items: center;
+  padding: 24px; position: relative;
+}
+
+/* Animasyonlu saha çizgileri */
+#screen-menu::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(31,110,52,0.18) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, transparent 28%, rgba(255,255,255,0.04) 29%, rgba(255,255,255,0.04) 30%, transparent 31%);
+  z-index: 0;
+  animation: drift 40s linear infinite;
+}
+
+#screen-menu::after {
+  content: "";
+  position: absolute;
+  bottom: -80px; left: 50%; transform: translateX(-50%);
+  width: 320px; height: 320px;
+  border: 2px solid rgba(255,255,255,0.06);
+  border-radius: 50%;
+  z-index: 0;
+  animation: drift 40s linear infinite reverse;
+}
+
+@keyframes drift {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.05); }
+}
+
+.logo {
+  font-family: var(--display);
+  font-size: clamp(72px, 18vw, 110px);
+  letter-spacing: 0.06em;
+  line-height: 0.85;
+  position: relative; z-index: 1;
+  animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Neon green text with yellow shadow */
+  color: var(--accent);
+  -webkit-text-stroke: 2px rgba(0,0,0,0.3);
+  filter: drop-shadow(0 0 20px rgba(249,224,0,0.4)) drop-shadow(0 4px 0 rgba(180,130,0,0.8));
+}
+.logo .dot { color: var(--green); filter: drop-shadow(0 0 12px rgba(32,208,96,0.7)); }
+
+.tagline {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.38em;
+  color: var(--ink-dim);
+  margin-top: 10px; margin-bottom: 44px;
+  text-transform: uppercase;
+  position: relative; z-index: 1;
+  text-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+@keyframes pop-in {
+  from { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+  to   { transform: scale(1)   rotate(0);      opacity: 1; }
+}
+
+.menu-buttons {
+  display: flex; flex-direction: column;
+  gap: 10px; width: 100%; max-width: 320px;
+  position: relative; z-index: 1;
+}
+
+.menu-btn {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 15px 20px;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  letter-spacing: 0.02em;
+  transition: transform 0.1s, background 0.15s, box-shadow 0.15s;
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(8px);
+}
+.menu-btn:active { transform: scale(0.97); }
+.menu-btn:hover:not(.disabled) {
+  background: var(--surface-2);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.menu-btn.primary {
+  background: linear-gradient(135deg, var(--accent) 0%, #e8a000 100%);
+  color: #0a1200;
+  font-weight: 800;
+  border: none;
+  box-shadow: 0 6px 24px rgba(249,224,0,0.30), 0 0 0 0 var(--accent);
+  animation: pulse-glow 2.8s ease-in-out infinite;
+  position: relative; overflow: hidden;
+}
+.menu-btn.primary::after {
+  content: "";
+  position: absolute; top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  animation: shine 3s ease-in-out infinite 1s;
+}
+@keyframes shine {
+  0%   { left: -60%; }
+  40%, 100% { left: 130%; }
+}
+@keyframes pulse-glow {
+  50% { box-shadow: 0 8px 30px rgba(249,224,0,0.50), 0 0 0 5px rgba(249,224,0,0.12); }
+}
+
+.menu-btn.disabled {
+  opacity: 0.35; cursor: not-allowed;
+}
+.menu-btn.disabled::after { content: " · yakında"; font-size: 12px; opacity: 0.7; }
+
+/* ===== SCREEN HEADER ===== */
+.screen-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 4px 4px 14px;
+}
+
+.back-btn {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  color: var(--ink); width: 40px; height: 40px;
+  border-radius: 10px; font-size: 18px; cursor: pointer;
+  display: grid; place-items: center; flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+.back-btn:active { transform: scale(0.88); }
+.back-btn:hover { background: var(--surface-2); }
+
+.screen-title {
+  font-family: var(--display);
+  font-size: 28px; letter-spacing: 0.08em;
+  color: var(--accent);
+  filter: drop-shadow(0 2px 8px rgba(249,224,0,0.3));
+}
+
+/* ===== SETTINGS ===== */
+.settings-list {
+  display: flex; flex-direction: column;
+  gap: 12px; padding: 2px; overflow-y: auto;
+}
+
+.setting {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px; padding: 16px;
+}
+
+.setting-label {
+  font-weight: 700; font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-dim); margin-bottom: 12px;
+}
+
+.difficulty-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+}
+
+.diff-btn {
+  font-family: var(--body);
+  font-weight: 700; font-size: 10px; letter-spacing: 0.04em;
+  padding: 10px 4px;
+  border: 1.5px solid rgba(255,255,255,0.10);
+  border-radius: 8px; background: transparent;
+  color: var(--ink-soft); cursor: pointer;
+  text-align: center; text-transform: uppercase; line-height: 1.2;
+  transition: all 0.15s;
+}
+.diff-btn:active { transform: scale(0.93); }
+.diff-btn.selected {
+  border-color: var(--accent);
+  background: rgba(249,224,0,0.12);
+  color: var(--accent);
+}
+
+.toggle-row { display: flex; justify-content: space-between; align-items: center; }
+.toggle-row .setting-label { margin-bottom: 0; }
+
+.switch {
+  width: 48px; height: 26px;
+  background: rgba(255,255,255,0.10);
+  border-radius: 999px; position: relative; cursor: pointer;
+  transition: background 0.2s;
+}
+.switch::after {
+  content: ""; position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  background: var(--ink); border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.switch.on { background: var(--green); }
+.switch.on::after { transform: translateX(22px); }
+
+/* ===== TEAM SELECT ===== */
+.team-stage {
+  font-family: var(--display);
+  font-size: 22px; letter-spacing: 0.12em;
+  color: var(--accent); text-align: center;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 0 10px rgba(249,224,0,0.25));
+}
+
+.team-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 10px; overflow-y: auto; padding: 2px; flex: 1;
+}
+
+.team-card {
+  background: var(--surface);
+  border: 1.5px solid var(--surface-border);
+  border-radius: 16px; padding: 16px 10px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+  cursor: pointer; transition: all 0.15s;
+  position: relative; overflow: hidden;
+}
+.team-card::before {
+  content: ""; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+}
+.team-card:active { transform: scale(0.95); }
+.team-card.selected {
+  border-color: var(--accent);
+  background: rgba(249,224,0,0.08);
+  box-shadow: 0 0 20px rgba(249,224,0,0.15), inset 0 0 20px rgba(249,224,0,0.03);
+}
+.team-card.selected::before {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+.team-card.taken { opacity: 0.3; pointer-events: none; }
+
+.team-crest {
+  width: 60px; height: 60px;
+  /* Shield shape via clip-path */
+  clip-path: polygon(50% 0%, 100% 25%, 100% 65%, 50% 100%, 0% 65%, 0% 25%);
+  display: grid; place-items: center;
+  font-family: var(--display); font-size: 20px;
+  color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  flex-shrink: 0;
+}
+
+.team-name {
+  font-weight: 700; font-size: 12px;
+  text-align: center; letter-spacing: 0.03em;
+  line-height: 1.25;
+}
+
+.confirm-btn {
+  margin-top: 12px; width: 100%; padding: 15px;
+  font-family: var(--display); font-size: 22px; letter-spacing: 0.10em;
+  border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--green), var(--green-2));
+  color: white; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(32,208,96,0.30);
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.confirm-btn:disabled {
+  background: rgba(255,255,255,0.07);
+  color: var(--ink-dim); box-shadow: none; cursor: not-allowed;
+}
+.confirm-btn:active:not(:disabled) { transform: scale(0.97); }
+
+/* ===== COIN TOSS ===== */
+#screen-cointoss {
+  justify-content: center; align-items: center;
+  text-align: center; padding: 30px;
+}
+
+.toss-title {
+  font-family: var(--display);
+  font-size: 36px; letter-spacing: 0.10em;
+  color: var(--accent); margin-bottom: 32px;
+  filter: drop-shadow(0 0 15px rgba(249,224,0,0.4));
+}
+
+.toss-coin {
+  width: 130px; height: 130px;
+  margin: 0 auto 28px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #ffe566, #c8940a, #ffe566, #c8940a, #ffe566);
+  display: grid; place-items: center;
+  font-family: var(--display); font-size: 42px;
+  color: #3a2000;
+  box-shadow:
+    inset 0 4px 8px rgba(255,255,255,0.35),
+    inset 0 -6px 12px rgba(0,0,0,0.35),
+    0 10px 32px rgba(0,0,0,0.5),
+    0 0 0 4px #9a6800,
+    0 0 0 6px #c8940a;
+}
+.toss-coin.flipping { animation: flip 1.2s ease-in-out; }
+@keyframes flip {
+  0%   { transform: rotateY(0)    translateY(0); }
+  20%  { transform: rotateY(360deg)  translateY(-28px); }
+  60%  { transform: rotateY(1440deg) translateY(-55px); }
+  100% { transform: rotateY(2160deg) translateY(0); }
+}
+
+.toss-prompt { font-weight: 600; font-size: 14px; color: var(--ink-soft); margin-bottom: 20px; }
+
+.toss-choices { display: flex; gap: 16px; justify-content: center; }
+
+.toss-btn {
+  font-family: var(--display); font-size: 20px; letter-spacing: 0.10em;
+  padding: 16px 36px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-2));
+  color: white; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(59,140,248,0.35);
+  transition: transform 0.1s;
+}
+.toss-btn:active { transform: scale(0.95); }
+
+.toss-result {
+  margin-top: 24px; font-weight: 700; font-size: 17px;
+  min-height: 64px; line-height: 1.6;
+}
+
+/* ===== MAÇ İÇİ KONTROL BUTONLARI ===== */
+.match-controls {
+  display: flex; gap: 6px; justify-content: flex-end; margin-bottom: 4px;
+}
+.ctrl-btn {
+  width: 32px; height: 32px; border-radius: 9px;
+  border: 1px solid var(--surface-border);
+  background: rgba(0,0,0,0.35);
+  color: var(--ink-soft); font-size: 15px;
+  cursor: pointer; display: grid; place-items: center;
+  transition: background 0.15s, transform 0.1s;
+}
+.ctrl-btn:active { transform: scale(0.88); }
+.ctrl-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+/* ===== ÇIKIŞ & SES OVERLAY ORTAKLAR ===== */
+.quit-overlay, .sound-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(10px);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 80; padding: 32px;
+}
+.quit-overlay.active, .sound-overlay.active { display: flex; animation: fade-in 0.18s; }
+
+/* Çıkış onay */
+.quit-title {
+  font-family: var(--display); font-size: 30px; letter-spacing: 0.08em;
+  color: var(--ink); text-align: center; margin-bottom: 8px;
+}
+.quit-sub {
+  font-size: 14px; color: var(--ink-dim);
+  text-align: center; line-height: 1.6; max-width: 260px; margin-bottom: 28px;
+}
+.quit-buttons { display: flex; gap: 12px; }
+.quit-btn {
+  font-family: var(--display); font-size: 16px; letter-spacing: 0.06em;
+  padding: 14px 26px; border: none; border-radius: 12px; cursor: pointer;
+  border-bottom: 3px solid rgba(0,0,0,0.3); transition: transform 0.1s;
+}
+.quit-btn:active { transform: scale(0.95) translateY(1px); border-bottom-width: 1px; }
+.quit-btn.cancel {
+  background: rgba(255,255,255,0.10); color: var(--ink);
+  border: 1px solid var(--surface-border); border-bottom: 3px solid rgba(0,0,0,0.3);
+}
+.quit-btn.confirm {
+  background: linear-gradient(160deg, var(--red), var(--red-2));
+  color: white; box-shadow: 0 4px 16px rgba(240,64,64,0.35);
+}
+
+/* Mini ses paneli */
+.sound-panel {
+  background: rgba(10,20,44,0.98); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px; padding: 20px 24px;
+  width: 100%; max-width: 280px;
+}
+.sound-panel-title {
+  font-family: var(--display); font-size: 22px; letter-spacing: 0.10em;
+  color: var(--accent); text-align: center; margin-bottom: 14px;
+}
+.sound-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.07);
+}
+.sound-row-label { font-weight: 600; font-size: 14px; color: var(--ink-soft); }
+.sound-close {
+  margin-top: 16px; font-family: var(--display);
+  font-size: 16px; letter-spacing: 0.06em; padding: 12px;
+  border: 1px solid var(--surface-border); border-radius: 12px;
+  background: rgba(255,255,255,0.08); color: var(--ink);
+  cursor: pointer; width: 100%;
+}
+.sound-close:active { transform: scale(0.97); }
+
+/* ===== MATCH ===== */
+#screen-match {
+  padding: 10px 10px 12px;
+  gap: 10px;
+}
+
+/* HUD — skor tablosu stili */
+.match-hud {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+}
+
+.hud-team {
+  display: flex; align-items: center;
+  gap: 8px; padding: 10px 12px;
+  min-width: 0;
+}
+.hud-team.right { justify-content: flex-end; }
+
+/* Color accent strip on each team side */
+.hud-team { position: relative; }
+.hud-team::after {
+  content: ""; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent); opacity: 0.4;
+}
+
+.hud-crest {
+  width: 30px; height: 30px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 65%, 50% 100%, 0% 65%, 0% 25%);
+  display: grid; place-items: center;
+  font-family: var(--display); font-size: 11px;
+  color: white; flex-shrink: 0;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.hud-tname {
+  font-weight: 700; font-size: 10px; letter-spacing: 0.04em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+.hud-center {
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.3);
+  border-left: 1px solid rgba(255,255,255,0.08);
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.hud-score {
+  font-family: var(--display);
+  font-size: 30px; letter-spacing: 0.12em;
+  color: var(--accent); line-height: 1;
+  text-shadow: 0 0 20px rgba(249,224,0,0.5), 0 2px 0 rgba(0,0,0,0.5);
+}
+
+.hud-time {
+  font-family: var(--body);
+  font-weight: 600; font-size: 9px;
+  color: var(--ink-dim); letter-spacing: 0.10em;
+  margin-top: 4px; text-transform: uppercase;
+}
+
+/* ===== FIELD ===== */
+.field-wrap { position: relative; }
+
+.field {
+  height: 114px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.55),
+    0 0 0 3px rgba(0,0,0,0.8),
+    0 6px 24px rgba(0,0,0,0.6);
+  /* Realistic grass with alternating stripes */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--field-dark) 0%, var(--field-dark) calc(50% / var(--z, 5)),
+      var(--field-light) calc(50% / var(--z, 5)) calc(100% / var(--z, 5))
+    );
+  display: grid;
+  grid-template-columns: 28px repeat(10, 1fr) 28px;
+}
+
+/* Center circle overlay */
+.field::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px; height: 50px;
+  border: 1.5px solid rgba(255,255,255,0.30);
+  border-radius: 50%;
+  pointer-events: none; z-index: 2;
+}
+
+/* Center line */
+.field::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%; bottom: 0;
+  width: 1.5px;
+  background: rgba(255,255,255,0.30);
+  pointer-events: none; z-index: 2;
+}
+
+.field-cell {
+  position: relative;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 9px;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 0.04em;
+  /* No border-right on cells — cleaner look */
+}
+
+/* Very subtle zone dividers */
+.field-cell + .field-cell {
+  border-left: 1px solid rgba(255,255,255,0.07);
+}
+
+.field-cell.goal {
+  background: rgba(0,0,0,0.25);
+  /* Net pattern */
+  background-image:
+    repeating-linear-gradient(0deg,   rgba(255,255,255,0.12) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(90deg,  rgba(255,255,255,0.12) 0 1px, transparent 1px 7px);
+}
+
+.field-cell.targetable {
+  background: rgba(249,224,0,0.30) !important;
+  cursor: pointer;
+  animation: throb 0.7s ease-in-out infinite;
+}
+@keyframes throb {
+  50% { background: rgba(249,224,0,0.55) !important; }
+}
+
+/* BALL */
+.ball {
+  position: absolute;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  top: 50%; transform: translate(-50%, -50%);
+  transition: left 0.45s cubic-bezier(0.22, 1.2, 0.36, 1);
+  z-index: 6;
+  /* Realistic ball: white with black pentagon pattern suggestion */
+  background:
+    radial-gradient(circle at 38% 32%, #ffffff 0%, #e8e8e8 40%, #bbb 75%, #888 100%);
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.7),
+    inset -3px -3px 6px rgba(0,0,0,0.25),
+    inset 2px 2px 5px rgba(255,255,255,0.55);
+  /* Pentagon hints */
+  border: 1.5px solid rgba(0,0,0,0.5);
+}
+.ball::before {
+  content: "";
+  position: absolute; inset: 3px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 60%),
+    repeating-conic-gradient(rgba(0,0,0,0.12) 0deg 36deg, transparent 36deg 72deg);
+}
+
+.possession-flag {
+  font-weight: 700; font-size: 10px;
+  text-align: center; letter-spacing: 0.10em;
+  margin-top: 5px; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.possession-flag .who { color: var(--accent); font-weight: 800; }
+
+/* ===== ACTION PANEL ===== */
+.panel {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: flex-end; gap: 8px; min-height: 0;
+}
+
+.action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+.action-btn {
+  font-family: var(--display);
+  font-size: 16px; letter-spacing: 0.06em;
+  padding: 16px 6px; border: none; border-radius: 14px;
+  color: white; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  transition: transform 0.1s, filter 0.1s;
+  position: relative; overflow: hidden;
+  /* 3D press effect via border */
+  border-bottom: 4px solid rgba(0,0,0,0.35);
+}
+.action-btn::before {
+  content: ""; position: absolute;
+  top: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.18), transparent);
+  border-radius: 14px 14px 0 0;
+  pointer-events: none;
+}
+.action-btn:active:not(:disabled) {
+  transform: scale(0.94) translateY(2px);
+  border-bottom-width: 2px;
+  filter: brightness(0.9);
+}
+.action-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.action-btn .icon { font-size: 24px; line-height: 1; }
+.action-btn .label { font-size: 14px; line-height: 1; }
+.action-btn .meta {
+  font-size: 9px; opacity: 0.85;
+  font-family: var(--body); font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+.action-btn.pas {
+  background: linear-gradient(160deg, #4898ff, #1a50c0);
+  box-shadow: 0 4px 16px rgba(59,140,248,0.40);
+}
+.action-btn.sut {
+  background: linear-gradient(160deg, #f04040, #a01010);
+  box-shadow: 0 4px 16px rgba(240,64,64,0.40);
+}
+.action-btn.dribling {
+  background: linear-gradient(160deg, #ff9030, #b05000);
+  box-shadow: 0 4px 16px rgba(255,144,48,0.40);
+}
+
+.choose-timer-wrap {
+  width: 100%; height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px; overflow: hidden; margin-bottom: 6px;
+}
+.choose-timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--accent), var(--red));
+  width: 100%; transform-origin: left;
+}
+
+.info-card {
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px; padding: 14px;
+  text-align: center; font-weight: 700;
+  border: 1px solid var(--surface-border);
+}
+.info-card .small {
+  font-size: 10px; color: var(--ink-dim);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px;
+}
+.info-card .big {
+  font-family: var(--display);
+  font-size: 22px; color: var(--accent); letter-spacing: 0.06em;
+}
+
+/* ===== QUESTION OVERLAY ===== */
+.q-overlay {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; z-index: 50;
+  /* Spotlight effect */
+  background:
+    radial-gradient(ellipse 70% 70% at 50% 50%, rgba(10,20,40,0.88) 0%, rgba(5,10,20,0.97) 100%);
+  backdrop-filter: blur(8px);
+}
+.q-overlay::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 50% 40% at 50% 40%, rgba(59,140,248,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.q-overlay.active { display: flex; }
+
+.q-difficulty {
+  font-family: var(--display);
+  font-size: 15px; letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 6px 16px; border-radius: 999px;
+  margin-bottom: 8px;
+  border: 1.5px solid currentColor;
+}
+.q-difficulty.cokKolay  { background: rgba(32,208,96,0.12);  color: var(--green); }
+.q-difficulty.kolay     { background: rgba(59,140,248,0.12);  color: var(--blue); }
+.q-difficulty.orta      { background: rgba(249,224,0,0.12);  color: var(--accent); }
+.q-difficulty.zor       { background: rgba(255,144,48,0.12);  color: var(--orange); }
+.q-difficulty.cokZor    { background: rgba(240,64,64,0.12);   color: var(--red); }
+.q-difficulty.champsLeague {
+  background: linear-gradient(135deg, rgba(176,96,248,0.20), rgba(59,140,248,0.15));
+  color: #c084fc;
+  border-color: #9040f0;
+  animation: champs-glow 2s ease-in-out infinite;
+}
+@keyframes champs-glow { 50% { box-shadow: 0 0 18px rgba(176,96,248,0.50); } }
+
+.q-text sup { font-size: 0.52em; vertical-align: super; line-height: 0; }
+.q-text sub { font-size: 0.52em; vertical-align: sub;   line-height: 0; }
+
+.q-context {
+  font-weight: 700; font-size: 10px;
+  letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--ink-dim); margin-bottom: 8px;
+}
+
+.q-timer-wrap {
+  width: min(88%, 300px); height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px; overflow: hidden; margin-bottom: 18px;
+}
+.q-timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--accent), var(--red));
+  width: 100%; transform-origin: left;
+}
+
+.q-text {
+  font-family: var(--display);
+  font-size: clamp(38px, 10vw, 58px);
+  letter-spacing: 0.04em;
+  margin-bottom: 14px; text-align: center;
+  filter: drop-shadow(0 0 24px rgba(255,255,255,0.15));
+}
+
+.q-answer {
+  font-family: var(--display);
+  font-size: 34px; color: var(--accent);
+  min-height: 52px; min-width: 150px;
+  background: rgba(249,224,0,0.06);
+  border: 2px solid rgba(249,224,0,0.30);
+  border-radius: 12px; padding: 8px 20px;
+  text-align: center; margin-bottom: 18px;
+  box-shadow: 0 0 20px rgba(249,224,0,0.08);
+  letter-spacing: 0.06em;
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 68px);
+  gap: 8px; margin-bottom: 10px;
+}
+
+.numkey {
+  width: 68px; height: 56px;
+  border: none; border-radius: 10px;
+  background: rgba(255,255,255,0.07);
+  color: var(--ink);
+  font-family: var(--display); font-size: 22px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-bottom: 3px solid rgba(0,0,0,0.4);
+  transition: transform 0.08s, filter 0.08s;
+}
+.numkey:active {
+  transform: scale(0.91) translateY(1px);
+  border-bottom-width: 1px;
+  filter: brightness(1.2);
+}
+.numkey:hover { background: rgba(255,255,255,0.12); }
+.numkey.action-ok {
+  background: linear-gradient(160deg, var(--green), var(--green-2));
+  border-bottom-color: rgba(0,0,0,0.5);
+  color: white;
+  box-shadow: 0 4px 14px rgba(32,208,96,0.35);
+}
+.numkey.action-del {
+  background: rgba(240,64,64,0.15); color: var(--red);
+  border-color: rgba(240,64,64,0.25);
+}
+.numkey.action-neg {
+  background: rgba(176,96,248,0.12); color: var(--purple);
+  border-color: rgba(176,96,248,0.25);
+}
+
+/* ===== FAULT OVERLAY ===== */
+.fault-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 60; gap: 18px;
+}
+.fault-overlay.active { display: flex; animation: fade-in 0.2s; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.fault-title {
+  font-family: var(--display);
+  font-size: 32px; color: var(--red); letter-spacing: 0.10em;
+  filter: drop-shadow(0 0 18px rgba(240,64,64,0.5));
+  animation: shake 0.4s ease-out;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+.fault-timer { width: min(60%, 200px); height: 5px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+.fault-timer-bar { height: 100%; background: var(--red); transform-origin: left; }
+
+.fault-buttons { display: flex; gap: 14px; }
+
+.fault-btn {
+  font-family: var(--display); font-size: 16px; letter-spacing: 0.06em;
+  padding: 15px 22px; border: none; border-radius: 14px;
+  color: white; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  border-bottom: 4px solid rgba(0,0,0,0.3);
+  transition: transform 0.1s;
+}
+.fault-btn .icon { font-size: 22px; }
+.fault-btn.skip {
+  background: linear-gradient(160deg, #4a5568, #1e2530);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+.fault-btn.yellow {
+  background: linear-gradient(160deg, #fde047, #ca8a04);
+  color: #1a1000;
+}
+.fault-btn:active { transform: scale(0.93) translateY(2px); border-bottom-width: 2px; }
+
+/* ===== EVENT BANNER ===== */
+.event-banner {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 70; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(20,80,20,0.60), rgba(0,0,0,0.82));
+}
+.event-banner.active {
+  display: flex;
+  animation: banner-flash 0.3s ease-out;
+}
+@keyframes banner-flash {
+  0%   { opacity: 0; transform: scale(0.85); }
+  60%  { opacity: 1; transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.event-title {
+  font-family: var(--display);
+  font-size: clamp(64px, 20vw, 108px);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  filter:
+    drop-shadow(0 0 30px rgba(249,224,0,0.6))
+    drop-shadow(-4px 4px 0 rgba(200,120,0,0.7))
+    drop-shadow(-8px 8px 0 rgba(0,0,0,0.5));
+  animation: score-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes score-pop {
+  from { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+  to   { transform: scale(1)   rotate(0);      opacity: 1; }
+}
+
+.event-sub {
+  margin-top: 10px; font-family: var(--body);
+  font-weight: 700; font-size: 14px;
+  letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.event-banner.miss   { background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(80,10,10,0.60), rgba(0,0,0,0.82)); }
+.event-banner.miss .event-title   { color: var(--ink); font-size: clamp(40px, 12vw, 68px); filter: drop-shadow(-3px 3px 0 rgba(0,0,0,0.6)); }
+.event-banner.post   { background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(80,50,0,0.60), rgba(0,0,0,0.82)); }
+.event-banner.post .event-title  { color: var(--orange); font-size: clamp(40px,12vw,68px); filter: drop-shadow(0 0 20px rgba(255,144,48,0.5)); }
+.event-banner.half   { background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(10,30,80,0.65), rgba(0,0,0,0.82)); }
+.event-banner.half .event-title  { color: var(--blue);   font-size: clamp(36px,10vw,60px); filter: drop-shadow(0 0 20px rgba(59,140,248,0.5)); }
+.event-banner.full   { background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(50,40,0,0.65), rgba(0,0,0,0.85)); }
+.event-banner.full .event-title  { font-size: clamp(32px,9vw,54px); }
+
+/* Confetti container */
+#confetti-canvas {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 69;
+}
+
+/* Card indicators */
+.card-indicator { display: inline-flex; gap: 2px; margin-left: 6px; }
+.card-indicator .yc {
+  width: 7px; height: 11px;
+  background: #facc15; border-radius: 1.5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* Small screens */
+@media (max-height: 640px) {
+  .field { height: 90px; }
+  .ball  { width: 18px; height: 18px; }
+  .logo  { font-size: clamp(56px, 14vw, 88px); }
+  .tagline { margin-bottom: 26px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== MAIN MENU ===== -->
+  <div class="screen active" id="screen-menu">
+    <h1 class="logo">MAT<span class="dot">·</span>BOL</h1>
+    <p class="tagline" data-i18n="tagline">⚽ Math Football ⚽</p>
+    <div class="menu-buttons">
+      <button class="menu-btn primary" data-action="singleMatch" data-i18n="menu.single">⚽ Single Match</button>
+      <button class="menu-btn disabled" data-action="newCareer" data-i18n="menu.career.new">🏆 New Career</button>
+      <button class="menu-btn disabled" data-action="loadCareer" data-i18n="menu.career.load">📂 Load Career</button>
+      <button class="menu-btn disabled" data-action="onlineMatch" data-i18n="menu.online">🌐 Online Match</button>
+      <button class="menu-btn settings" data-action="settings" data-i18n="menu.settings">⚙️ Settings</button>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS ===== -->
+  <div class="screen" id="screen-settings">
+    <div class="screen-header">
+      <button class="back-btn" data-back="menu">←</button>
+      <div class="screen-title" data-i18n="settings.title">SETTINGS</div>
+    </div>
+    <div class="settings-list">
+      <div class="setting">
+        <div class="setting-label" data-i18n="settings.difficulty">Difficulty</div>
+        <div class="difficulty-grid" id="difficulty-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="diff-btn selected" data-diff="cokKolay" data-i18n="diff.cokKolay">VERY EASY</button>
+          <button class="diff-btn" data-diff="kolay" data-i18n="diff.kolay">EASY</button>
+          <button class="diff-btn" data-diff="orta" data-i18n="diff.orta">MEDIUM</button>
+          <button class="diff-btn" data-diff="zor" data-i18n="diff.zor">HARD</button>
+          <button class="diff-btn" data-diff="cokZor" data-i18n="diff.cokZor">VERY HARD</button>
+          <button class="diff-btn" data-diff="champsLeague" data-i18n="diff.champsLeague" style="background: linear-gradient(135deg,rgba(168,85,247,0.18),rgba(59,130,246,0.18)); border-color: rgba(192,132,252,0.5); color: #c084fc;">⚽ CHAMPS</button>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="toggle-row">
+          <div class="setting-label" data-i18n="settings.time">Time Multiplier (1× / 1.5× / 2×)</div>
+        </div>
+        <div class="difficulty-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 8px;">
+          <button class="diff-btn selected" data-time="1">1×</button>
+          <button class="diff-btn" data-time="1.5">1.5×</button>
+          <button class="diff-btn" data-time="2">2×</button>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="setting-label" data-i18n="settings.zones">Zones Per Half</div>
+        <div class="difficulty-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 8px;" id="zones-grid">
+          <button class="diff-btn" data-zones="3" data-i18n="zones.fast">3 · Fast</button>
+          <button class="diff-btn selected" data-zones="5" data-i18n="zones.standard">5 · Standard</button>
+          <button class="diff-btn" data-zones="8" data-i18n="zones.long">8 · Long</button>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="toggle-row">
+          <div class="setting-label" data-i18n="settings.music">Music</div>
+          <div class="switch on" data-toggle="music"></div>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="toggle-row">
+          <div class="setting-label" data-i18n="settings.sfx">Sound Effects</div>
+          <div class="switch on" data-toggle="sfx"></div>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="setting-label" data-i18n="settings.lang">Language</div>
+        <div class="difficulty-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 8px;" id="lang-grid">
+          <button class="diff-btn selected" data-lang="en">🇬🇧 English</button>
+          <button class="diff-btn" data-lang="tr">🇹🇷 Türkçe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TEAM SELECT ===== -->
+  <div class="screen" id="screen-teamselect">
+    <div class="screen-header">
+      <button class="back-btn" data-back="menu">←</button>
+      <div class="screen-title" data-i18n="teamsel.title">PICK TEAM</div>
+    </div>
+    <div class="team-stage" id="team-stage" data-i18n="team.your">⚽ Your Team</div>
+    <div class="team-grid" id="team-grid"></div>
+    <button class="confirm-btn" id="team-confirm" disabled data-i18n="team.next">NEXT</button>
+  </div>
+
+  <!-- ===== COIN TOSS ===== -->
+  <div class="screen" id="screen-cointoss">
+    <div class="toss-title" data-i18n="toss.title">HEADS OR TAILS?</div>
+    <div class="toss-coin" id="toss-coin">$</div>
+    <div class="toss-prompt" id="toss-prompt" data-i18n="toss.pick">Pick a side</div>
+    <div class="toss-choices" id="toss-choices">
+      <button class="toss-btn" data-toss="yazi" data-i18n="toss.heads">HEADS</button>
+      <button class="toss-btn" data-toss="tura" data-i18n="toss.tails">TAILS</button>
+    </div>
+    <div class="toss-result" id="toss-result"></div>
+  </div>
+
+  <!-- ===== MATCH ===== -->
+  <div class="screen" id="screen-match">
+
+    <!-- Maç içi kontrol butonları -->
+    <div class="match-controls">
+      <button class="ctrl-btn" id="btn-sound" title="Ses ayarları">🔊</button>
+      <button class="ctrl-btn" id="btn-home" title="Ana menüye dön">🏠</button>
+    </div>
+
+    <div class="match-hud">
+      <div class="hud-team">
+        <div class="hud-crest" id="hud-crest-p"></div>
+        <div class="hud-tname" id="hud-name-p">Takım</div>
+        <span class="card-indicator" id="hud-cards-p"></span>
+      </div>
+      <div class="hud-center">
+        <div class="hud-score" id="hud-score">0 - 0</div>
+        <div class="hud-time" id="hud-time">1. DEVRE · 0'</div>
+      </div>
+      <div class="hud-team right">
+        <span class="card-indicator" id="hud-cards-o"></span>
+        <div class="hud-tname" id="hud-name-o">Rakip</div>
+        <div class="hud-crest" id="hud-crest-o"></div>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field" id="field">
+        <div class="field-cell goal" data-pos="-99">⛉</div>
+        <!-- zone cells inserted dynamically by buildField() -->
+        <div class="field-cell goal right" data-pos="99">⛉</div>
+        <div class="ball" id="ball"></div>
+      </div>
+      <div class="possession-flag" id="possession-flag">
+        Top: <span class="who" id="who">—</span>
+      </div>
+    </div>
+
+    <div class="panel" id="panel">
+      <!-- dynamic content -->
+    </div>
+
+    <!-- Question overlay -->
+    <div class="q-overlay" id="q-overlay">
+      <div class="q-difficulty" id="q-difficulty">ÇOK KOLAY</div>
+      <div class="q-context" id="q-context">SANTRA · İLK SORU</div>
+      <div class="q-timer-wrap"><div class="q-timer-bar" id="q-timer-bar"></div></div>
+      <div class="q-text" id="q-text">3 + 5</div>
+      <div class="q-answer" id="q-answer">&nbsp;</div>
+      <div class="numpad" id="numpad">
+        <button class="numkey">1</button>
+        <button class="numkey">2</button>
+        <button class="numkey">3</button>
+        <button class="numkey">4</button>
+        <button class="numkey">5</button>
+        <button class="numkey">6</button>
+        <button class="numkey">7</button>
+        <button class="numkey">8</button>
+        <button class="numkey">9</button>
+        <button class="numkey action-neg" data-act="neg">±</button>
+        <button class="numkey">0</button>
+        <button class="numkey action-del" data-act="del">⌫</button>
+      </div>
+      <button class="numkey action-ok" data-act="ok" style="width:220px;">OK</button>
+    </div>
+
+    <!-- Fault overlay -->
+    <div class="fault-overlay" id="fault-overlay">
+      <div class="fault-title" data-i18n="fault.title">WRONG!</div>
+      <div class="fault-timer"><div class="fault-timer-bar" id="fault-bar"></div></div>
+      <div class="fault-buttons">
+        <button class="fault-btn skip" data-fault="skip">
+          <span class="icon">⏭</span><span data-i18n="fault.skip">SKIP</span>
+        </button>
+        <button class="fault-btn yellow" data-fault="yellow">
+          <span class="icon">🟨</span><span data-i18n="fault.yellow">YELLOW CARD</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Çıkış onay overlay -->
+    <div class="quit-overlay" id="quit-overlay">
+      <div class="quit-title" data-i18n="quit.title">QUIT MATCH?</div>
+      <div class="quit-sub" data-i18n="quit.sub">The match will be cancelled. Are you sure?</div>
+      <div class="quit-buttons">
+        <button class="quit-btn cancel" id="quit-cancel" data-i18n="quit.cancel">Continue</button>
+        <button class="quit-btn confirm" id="quit-confirm" data-i18n="quit.confirm">Quit</button>
+      </div>
+    </div>
+
+    <!-- Mini ses paneli -->
+    <div class="sound-overlay" id="sound-overlay">
+      <div class="sound-panel">
+        <div class="sound-panel-title" data-i18n="sound.title">SOUND</div>
+        <div class="sound-row">
+          <span class="sound-row-label" data-i18n="sound.music">🎵 Music</span>
+          <div class="switch on" id="match-music-switch"></div>
+        </div>
+        <div class="sound-row">
+          <span class="sound-row-label" data-i18n="sound.sfx">🔊 Sound Effects</span>
+          <div class="switch on" id="match-sfx-switch"></div>
+        </div>
+        <button class="sound-close" id="sound-close" data-i18n="sound.close">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- Confetti canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Event banner -->
+    <div class="event-banner" id="event-banner">
+      <div class="event-title" id="event-title">GOL!</div>
+      <div class="event-sub" id="event-sub"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================
+// MAT-BOL — Matematik Futbolu
+// ============================================
+
+// ===== TEAMS =====
+const TEAMS = [
+  { name: "Hyperbool",     short: "HB",  c1: "#dc2626", c2: "#7f1d1d" },
+  { name: "Napolygon",     short: "NP",  c1: "#0ea5e9", c2: "#0c4a6e" },
+  { name: "ArcSenal",      short: "AS",  c1: "#facc15", c2: "#854d0e" },
+  { name: "Al Gebra",      short: "AG",  c1: "#22c55e", c2: "#14532d" },
+  { name: "Fiborentina",   short: "FB",  c1: "#a855f7", c2: "#581c87" },
+  { name: "Real Module",   short: "RM",  c1: "#94a3b8", c2: "#1e293b" },
+  { name: "Gammatasaray",  short: "GS",  c1: "#fb923c", c2: "#7c2d12" },
+  { name: "AtaLambda",     short: "Aλ",  c1: "#374151", c2: "#030712" },
+];
+
+// ===== STATE =====
+const state = {
+  screen: 'menu',
+  settings: {
+    difficulty: 'cokKolay',
+    timeMultiplier: 1,
+    zones: 5,
+    music: true,
+    sfx: true,
+    lang: 'en',
+  },
+  ts: { stage: 'player', playerTeam: null, opponentTeam: null },
+  toss: { picked: null, result: null },
+  match: null,
+};
+
+// ===== TRANSLATIONS =====
+const TR = {
+  en: {
+    tagline: '⚽ Math Football ⚽',
+    'menu.single': '⚽ Single Match',
+    'menu.career.new': '🏆 New Career',
+    'menu.career.load': '📂 Load Career',
+    'menu.online': '🌐 Online Match',
+    'menu.settings': '⚙️ Settings',
+    'settings.title': 'SETTINGS',
+    'settings.difficulty': 'Difficulty',
+    'settings.time': 'Time Multiplier (1× / 1.5× / 2×)',
+    'settings.zones': 'Zones Per Half',
+    'settings.lang': 'Language',
+    'zones.fast': '3 · Fast',
+    'zones.standard': '5 · Standard',
+    'zones.long': '8 · Long',
+    'settings.music': 'Music',
+    'settings.sfx': 'Sound Effects',
+    'teamsel.title': 'PICK TEAM',
+    'team.next': 'NEXT',
+    'team.your': '⚽ Your Team',
+    'team.opp': '🆚 Opponent',
+    'toss.title': 'HEADS OR TAILS?',
+    'toss.pick': 'Pick a side',
+    'toss.heads': 'HEADS',
+    'toss.tails': 'TAILS',
+    'toss.kickoff': 'KICK OFF',
+    'toss.won': '🎉 You answer first!',
+    'toss.lost': '😅 Opponent answers first.',
+    'toss.result': 'Result: ',
+    'diff.cokKolay': 'VERY EASY',
+    'diff.kolay': 'EASY',
+    'diff.orta': 'MEDIUM',
+    'diff.zor': 'HARD',
+    'diff.cokZor': 'VERY HARD',
+    'diff.champsLeague': '⚽ CHAMPS LEAGUE',
+    'hud.half': 'HALF',
+    'pos.you': 'YOU',
+    'pos.opp': 'OPPONENT',
+    'pos.prefix': 'Ball: ',
+    'panel.kickoff.label': 'KICK OFF',
+    'panel.kickoff.big': 'FIRST QUESTION COMING…',
+    'panel.def.label': 'DEFENSE',
+    'panel.def.big': 'STEAL THE BALL!',
+    'panel.pass.label': 'PASS — TARGET ZONE',
+    'panel.pass.big': 'PICK A FORWARD ZONE',
+    'panel.pen.label': '2ND YELLOW → RED',
+    'panel.pen.big': 'OPPONENT PENALTY!',
+    'action.pass': 'PASS',
+    'action.shot': 'SHOT',
+    'action.drib': 'DRIBBLE',
+    'action.pass.meta': 'pick target',
+    'action.shot.far': 'too far',
+    'q.kickoff': 'KICK OFF · FIRST QUESTION',
+    'q.defense': 'DEFENSE · STEAL THE BALL',
+    'q.dribble': 'DRIBBLE · 1 ZONE FORWARD',
+    'q.shot': 'SHOT · {n} ZONES FROM GOAL',
+    'q.pass': 'PASS · {n} ZONES FORWARD',
+    'q.drib.auto': 'DRIBBLE · AUTO',
+    'q.pass.auto': 'PASS · AUTO · 1 ZONE FORWARD',
+    'q.shot.auto': 'SHOT · AUTO · {n} ZONES FROM GOAL',
+    'fault.title': 'WRONG!',
+    'fault.skip': 'SKIP',
+    'fault.yellow': 'YELLOW CARD',
+    'banner.goal': 'GOAL!',
+    'banner.post': 'POST!',
+    'banner.post.sub': 'Ball bounced back',
+    'banner.aut': 'OUT!',
+    'banner.aut.sub': 'Goalkeeper clearance',
+    'banner.opp.goal': 'OPPONENT SCORED!',
+    'banner.opp.pen': 'OPPONENT PENALTY!',
+    'banner.opp.pen.sub': '2nd yellow → red card',
+    'banner.opp.post': 'POST! Opponent missed',
+    'banner.opp.aut': 'OUT! Ball with keeper',
+    'banner.pen.goal': 'PENALTY GOAL!',
+    'banner.pen.post': 'POST! Penalty missed',
+    'banner.pen.aut': 'OUT! Penalty missed',
+    'banner.half': 'HALF TIME',
+    'banner.half.sub': 'Score: {p} - {o}',
+    'banner.stoppage': 'STOPPAGE TIME',
+    'banner.stoppage.sub': '{n} moves remaining!',
+    'banner.full': 'FULL TIME',
+    'banner.win': '🏆 YOU WIN!',
+    'banner.lose': '😔 YOU LOSE',
+    'banner.draw': '🤝 DRAW',
+    'banner.score': 'Score: {p} - {o} · ',
+    'quit.title': 'QUIT MATCH?',
+    'quit.sub': 'The match will be cancelled. Are you sure?',
+    'quit.cancel': 'Continue',
+    'quit.confirm': 'Quit',
+    'sound.title': 'SOUND',
+    'sound.music': '🎵 Music',
+    'sound.sfx': '🔊 Sound Effects',
+    'sound.close': 'CLOSE',
+  },
+  tr: {
+    tagline: '⚽ Matematik Futbolu ⚽',
+    'menu.single': '⚽ Tek Maç',
+    'menu.career.new': '🏆 Yeni Kariyer',
+    'menu.career.load': '📂 Kariyer Yükle',
+    'menu.online': '🌐 Online Maç',
+    'menu.settings': '⚙️ Ayarlar',
+    'settings.title': 'AYARLAR',
+    'settings.difficulty': 'Zorluk',
+    'settings.time': 'Süre Çarpanı (1× / 1.5× / 2×)',
+    'settings.zones': 'Yarı Saha Bölge Sayısı',
+    'settings.lang': 'Dil',
+    'zones.fast': '3 · Hızlı',
+    'zones.standard': '5 · Standart',
+    'zones.long': '8 · Uzun',
+    'settings.music': 'Müzik',
+    'settings.sfx': 'Ses Efektleri',
+    'teamsel.title': 'TAKIM SEÇ',
+    'team.next': 'İLERİ',
+    'team.your': '⚽ Senin takımın',
+    'team.opp': '🆚 Rakip takım',
+    'toss.title': 'YAZI YA DA TURA?',
+    'toss.pick': 'Bir taraf seç',
+    'toss.heads': 'YAZI',
+    'toss.tails': 'TURA',
+    'toss.kickoff': 'MAÇA BAŞLA',
+    'toss.won': '🎉 İlk soruyu sen cevaplıyorsun!',
+    'toss.lost': '😅 İlk soruyu rakip cevaplıyor.',
+    'toss.result': 'Sonuç: ',
+    'diff.cokKolay': 'ÇOK KOLAY',
+    'diff.kolay': 'KOLAY',
+    'diff.orta': 'ORTA',
+    'diff.zor': 'ZOR',
+    'diff.cokZor': 'ÇOK ZOR',
+    'diff.champsLeague': '⚽ CHAMPS LEAGUE',
+    'hud.half': 'DEVRE',
+    'pos.you': 'SEN',
+    'pos.opp': 'RAKİP',
+    'pos.prefix': 'Top: ',
+    'panel.kickoff.label': 'SANTRA',
+    'panel.kickoff.big': 'İLK SORU GELİYOR…',
+    'panel.def.label': 'SAVUNMA',
+    'panel.def.big': 'TOPU AL!',
+    'panel.pass.label': 'PAS — Hedef Bölge',
+    'panel.pass.big': 'İLERİDE BİR BÖLGE SEÇ',
+    'panel.pen.label': '2. SARI KART → KIRMIZI',
+    'panel.pen.big': 'RAKİBE PENALTI!',
+    'action.pass': 'PAS',
+    'action.shot': 'ŞUT',
+    'action.drib': 'DRİBLİNG',
+    'action.pass.meta': 'hedef seç',
+    'action.shot.far': 'çok uzak',
+    'q.kickoff': 'SANTRA · İLK SORU',
+    'q.defense': 'SAVUNMA · TOPU ÇAL',
+    'q.dribble': 'DRİBLİNG · 1 BÖLGE İLERİ',
+    'q.shot': 'ŞUT · KALEDEN {n} BÖLGE',
+    'q.pass': 'PAS · {n} BÖLGE ÖNE',
+    'q.drib.auto': 'DRİBLİNG · OTOMATİK',
+    'q.pass.auto': 'PAS · OTOMATİK · 1 BÖLGE ÖNE',
+    'q.shot.auto': 'ŞUT · OTOMATİK · KALEDEN {n} BÖLGE',
+    'fault.title': 'YANLIŞ!',
+    'fault.skip': 'SKIP',
+    'fault.yellow': 'SARI KART',
+    'banner.goal': 'GOL!',
+    'banner.post': 'DİREK!',
+    'banner.post.sub': 'Top geri döndü',
+    'banner.aut': 'AUT!',
+    'banner.aut.sub': 'Kaleci aut atışı yaptı',
+    'banner.opp.goal': 'RAKİP GOL ATTI!',
+    'banner.opp.pen': 'RAKİBE PENALTI!',
+    'banner.opp.pen.sub': '2. sarı kart → kırmızı',
+    'banner.opp.post': 'DİREK! Rakip kaçırdı',
+    'banner.opp.aut': 'AUT! Top kalecide',
+    'banner.pen.goal': 'PENALTI GOL!',
+    'banner.pen.post': 'DİREK! Penaltı kaçtı',
+    'banner.pen.aut': 'AUT! Penaltı dışarı',
+    'banner.half': 'DEVRE ARASI',
+    'banner.half.sub': 'Skor: {p} - {o}',
+    'banner.stoppage': 'UZATMA DAKİKALARI',
+    'banner.stoppage.sub': '{n} hamle kaldı!',
+    'banner.full': 'MAÇ BİTTİ',
+    'banner.win': '🏆 KAZANDIN!',
+    'banner.lose': '😔 KAYBETTİN',
+    'banner.draw': '🤝 BERABERLİK',
+    'banner.score': 'Skor: {p} - {o} · ',
+    'quit.title': 'MAÇTAN ÇIK?',
+    'quit.sub': 'Maç iptal edilecek ve sonuç kaydedilmeyecek. Emin misin?',
+    'quit.cancel': 'Devam Et',
+    'quit.confirm': 'Çık',
+    'sound.title': 'SES AYARLARI',
+    'sound.music': '🎵 Müzik',
+    'sound.sfx': '🔊 Ses Efektleri',
+    'sound.close': 'KAPAT',
+  },
+};
+
+function t(key, vars = {}) {
+  const strings = TR[state.settings.lang] || TR.en;
+  let str = strings[key] !== undefined ? strings[key] : (TR.en[key] || key);
+  Object.entries(vars).forEach(([k, v]) => { str = str.replace(`{${k}}`, v); });
+  return str;
+}
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+}
+
+// ===== HELPERS =====
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function showScreen(name) {
+  state.screen = name;
+  $$('.screen').forEach(s => s.classList.remove('active'));
+  $('#screen-' + name).classList.add('active');
+  if (name === 'menu') startMenuMusic();
+  applyLang();
+}
+
+function diffLabel(d) {
+  return t('diff.' + d);
+}
+function diffOrder(d) {
+  return ['cokKolay','kolay','orta','zor','cokZor','champsLeague'].indexOf(d);
+}
+function diffFromOrder(i) {
+  return ['cokKolay','kolay','orta','zor','cokZor','champsLeague'][Math.max(0, Math.min(5, i))];
+}
+function diffTime(d) {
+  // seconds per question — generous so players can think and type
+  return ({
+    cokKolay:10, kolay:13, orta:16, zor:20, cokZor:25, champsLeague:35
+  }[d]) * state.settings.timeMultiplier;
+}
+
+function ri(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function choice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ===== MATH PROBLEM GENERATOR =====
+// Level design:
+//  cokKolay : İlkokul 1. sınıf — tek basamaklı toplama, sonuç ≤ 10
+//  kolay    : İlkokul 2-3. sınıf — çift basamaklı +/−, basit çarpım tablosu
+//  orta     : İlkokul 4-5. sınıf — tam çarpım tablosu, tam bölme, 2 basamaklı ±carry
+//  zor      : Ortaokul — 3 işlemli, işlem önceliği, kareler, negatif sonuçlar
+//  cokZor   : Lise / YKS hazırlık — küpler, parantez, (a+b)², büyük çarpım
+
+function generateProblem(level) {
+  let text, answer;
+
+  if (level === 'cokKolay') {
+    // İlkokul 1. sınıf: tek basamak + tek basamak, sonuç ≤ 10
+    // Ya da tek basamak çıkarma, sonuç ≥ 0
+    const type = choice(['add','sub','add','add']); // ağırlıklı toplama
+    if (type === 'add') {
+      const a = ri(1, 5);
+      const b = ri(1, 10 - a); // sonuç ≤ 10
+      answer = a + b;
+      text = `${a} + ${b}`;
+    } else {
+      const b = ri(1, 9);
+      const a = ri(b, 9); // a ≥ b, sonuç ≥ 0
+      answer = a - b;
+      text = `${a} − ${b}`;
+    }
+  }
+
+  else if (level === 'kolay') {
+    // İlkokul 2-3: çift basamaklı +/−, basit çarpım tablosu (×2, ×3, ×5, ×10)
+    const type = choice(['add','sub','mul2','mul3','mul5','mul10']);
+    if (type === 'add') {
+      const a = ri(10, 49), b = ri(10, 49);
+      answer = a + b;
+      text = `${a} + ${b}`;
+    } else if (type === 'sub') {
+      let a = ri(20, 99), b = ri(10, a - 1);
+      answer = a - b;
+      text = `${a} − ${b}`;
+    } else if (type === 'mul2') {
+      const a = ri(2, 9);
+      answer = 2 * a; text = `2 × ${a}`;
+    } else if (type === 'mul3') {
+      const a = ri(2, 9);
+      answer = 3 * a; text = `3 × ${a}`;
+    } else if (type === 'mul5') {
+      const a = ri(2, 9);
+      answer = 5 * a; text = `5 × ${a}`;
+    } else {
+      const a = ri(2, 9);
+      answer = 10 * a; text = `10 × ${a}`;
+    }
+  }
+
+  else if (level === 'orta') {
+    // İlkokul 4-5: tam çarpım tablosu (2-9), tam bölme, 2 basamaklı ± (carry/borrow dahil)
+    const type = choice(['mul','div','add','sub']);
+    if (type === 'mul') {
+      const a = ri(3, 9), b = ri(3, 9);
+      answer = a * b;
+      text = `${a} × ${b}`;
+    } else if (type === 'div') {
+      const b = ri(3, 9);
+      answer = ri(3, 9);        // bölüm
+      const a = b * answer;     // bölünen
+      text = `${a} ÷ ${b}`;
+    } else if (type === 'add') {
+      const a = ri(25, 99), b = ri(15, 99 - a + 15);
+      answer = a + b;
+      text = `${a} + ${b}`;
+    } else {
+      const b = ri(15, 79), a = ri(b + 5, 99);
+      answer = a - b;
+      text = `${a} − ${b}`;
+    }
+  }
+
+  else if (level === 'zor') {
+    // Ortaokul: 3 işlem, işlem önceliği, kareler (≤12²), negatif sonuçlar olabilir
+    const type = choice(['sq','sq_pm','axb_c','a_bxc','div_add']);
+    if (type === 'sq') {
+      // a² — tek başına, a ≤ 12
+      const a = ri(4, 12);
+      answer = a * a;
+      text = `${a}²`;
+    } else if (type === 'sq_pm') {
+      // a² + c  veya  a² − c
+      const a = ri(3, 11);
+      const c = ri(2, 30);
+      const op = choice(['+','−']);
+      answer = op === '+' ? a*a + c : a*a - c;
+      text = `${a}² ${op} ${c}`;
+    } else if (type === 'axb_c') {
+      // a × b + c  ya da  a × b − c  (işlem önceliği var)
+      const a = ri(3, 9), b = ri(3, 9), c = ri(2, 25);
+      const op = choice(['+','−']);
+      answer = op === '+' ? a*b + c : a*b - c;
+      text = `${a} × ${b} ${op} ${c}`;
+    } else if (type === 'a_bxc') {
+      // a − b × c  (işlem önceliği: önce çarpma)
+      const b = ri(2, 8), c = ri(2, 8);
+      const a = ri(b*c - 15, b*c + 30); // sonuç geniş aralıkta
+      answer = a - b * c;
+      text = `${a} − ${b} × ${c}`;
+    } else {
+      // a ÷ b + c  ya da  a ÷ b − c
+      const b = ri(2, 9);
+      const q = ri(3, 9);
+      const a = b * q;
+      const c = ri(2, 20);
+      const op = choice(['+','−']);
+      answer = op === '+' ? q + c : q - c;
+      text = `${a} ÷ ${b} ${op} ${c}`;
+    }
+  }
+
+  else { // cokZor — Lise / YKS hazırlık
+    const type = choice(['cube','sq_sq','paren_sq','big_mul','three_step','paren_mul','factorial']);
+    if (type === 'cube') {
+      const a = ri(3, 6);
+      answer = a*a*a;
+      text = `${a}³`;
+    } else if (type === 'sq_sq') {
+      const a = ri(5, 12), b = ri(2, a - 1);
+      const op = choice(['+','−']);
+      answer = op === '+' ? a*a + b*b : a*a - b*b;
+      text = `${a}² ${op} ${b}²`;
+    } else if (type === 'paren_sq') {
+      const a = ri(3, 9), b = ri(2, 15 - a);
+      answer = (a + b) * (a + b);
+      text = `(${a} + ${b})²`;
+    } else if (type === 'big_mul') {
+      const a = ri(13, 19), b = ri(11, 19);
+      answer = a * b;
+      text = `${a} × ${b}`;
+    } else if (type === 'three_step') {
+      const sub = choice(['sq_mul','cube_add']);
+      if (sub === 'sq_mul') {
+        const a = ri(3, 8), b = ri(2, 6), c = ri(5, 40);
+        const op = choice(['+','−']);
+        answer = op === '+' ? a*a*b + c : a*a*b - c;
+        text = `${a}² × ${b} ${op} ${c}`;
+      } else {
+        const a = ri(2, 4), b = ri(2, 8), c = ri(2, 15);
+        answer = a*a*a + b*c;
+        text = `${a}³ + ${b} × ${c}`;
+      }
+    } else if (type === 'paren_mul') {
+      const a = ri(8, 20), b = ri(5, 15), c = ri(7, 15);
+      answer = (a + b) * c;
+      text = `(${a} + ${b}) × ${c}`;
+    } else { // factorial — 4! to 6!
+      const n = choice([4, 5, 6]);
+      answer = n === 4 ? 24 : n === 5 ? 120 : 720;
+      text = `${n}!`;
+    }
+  }
+
+  // ─── CHAMPS LEAGUE ───────────────────────────────────────────────
+  if (level === 'champsLeague') {
+    const ALL_TYPES = [
+      // Logaritma (4)
+      'log2','log3','log5','log10',
+      // Kombinatorik (3)
+      'combination','permutation','factorial_hard',
+      // Diziler (3)
+      'ap_nth','gp_nth','gauss_sum',
+      // Fonksiyon ve polinom (2)
+      'poly_eval','chained_sq',
+      // Sayı teorisi (2)
+      'sum_sq','lcm',
+      // Trigonometri (1)
+      'trig_int',
+      // Fibonacci (1)
+      'fibonacci',
+      // Kesirli üs / iç içe kuvvet (1)
+      'nested_pow',
+      // Taban aritmetiği (1)
+      'modular',
+      // Karekök tabanı (1)
+      'sqrt_floor',
+    ];
+
+    // Üst üste aynı tür gelmesin — bir kez yeniden çek
+    let type = choice(ALL_TYPES);
+    if (state.match && type === state.match.lastChampType) {
+      const filtered = ALL_TYPES.filter(t => t !== type);
+      type = choice(filtered);
+    }
+    if (state.match) state.match.lastChampType = type;
+
+    // ── Logaritma ──────────────────────────────────────────────────
+    if (type === 'log2') {
+      const exp = choice([3,4,5,6,7]);
+      answer = exp; text = `log₂(${Math.pow(2,exp)})`;
+
+    } else if (type === 'log3') {
+      const exp = choice([2,3,4]);
+      answer = exp; text = `log₃(${Math.pow(3,exp)})`;
+
+    } else if (type === 'log5') {
+      const exp = choice([2,3]);
+      answer = exp; text = `log₅(${Math.pow(5,exp)})`;
+
+    } else if (type === 'log10') {
+      const exp = choice([2,3,4,5]);
+      answer = exp; text = `log₁₀(${Math.pow(10,exp)})`;
+
+    // ── Kombinatorik ───────────────────────────────────────────────
+    } else if (type === 'combination') {
+      const pairs = [[5,2,10],[6,2,15],[7,2,21],[8,3,56],[6,3,20],[7,3,35],[9,2,36],[10,3,120],[5,3,10],[8,2,28]];
+      const [n,k,val] = choice(pairs);
+      answer = val; text = `C(${n}, ${k})`;
+
+    } else if (type === 'permutation') {
+      const pairs = [[4,2,12],[5,2,20],[6,2,30],[4,3,24],[5,3,60],[3,2,6],[6,3,120]];
+      const [n,k,val] = choice(pairs);
+      answer = val; text = `P(${n}, ${k})`;
+
+    } else if (type === 'factorial_hard') {
+      const n = choice([5,6,7]);
+      const factMap = {5:120,6:720,7:5040};
+      answer = factMap[n]; text = `${n}!`;
+
+    // ── Diziler ────────────────────────────────────────────────────
+    } else if (type === 'ap_nth') {
+      // Aritmetik dizi: a₁ + (n−1)×d
+      const a1 = ri(2,8), d = ri(2,6), n2 = ri(5,10);
+      answer = a1 + (n2-1)*d;
+      text = `a₁=${a1},  d=${d},  a${n2}`;
+
+    } else if (type === 'gp_nth') {
+      // Geometrik dizi: a₁ × r^(n−1)   — küçük tutulur
+      const cases = [
+        {a:2,r:3,n:4,ans:54},{a:1,r:4,n:4,ans:64},{a:3,r:2,n:5,ans:48},
+        {a:2,r:2,n:6,ans:64},{a:1,r:3,n:5,ans:81},{a:5,r:2,n:5,ans:80},
+        {a:1,r:5,n:4,ans:125},{a:2,r:4,n:4,ans:128},{a:3,r:3,n:4,ans:81},
+      ];
+      const c = choice(cases);
+      answer = c.ans; text = `a₁=${c.a},  r=${c.r},  a${c.n}`;
+
+    } else if (type === 'gauss_sum') {
+      const n = ri(8,20);
+      answer = n*(n+1)/2;
+      text = `1 + 2 + … + ${n}`;
+
+    // ── Fonksiyon ve polinom ────────────────────────────────────────
+    } else if (type === 'poly_eval') {
+      const a = ri(1,3), b = ri(1,5), c = ri(0,8), x = ri(2,5);
+      answer = a*x*x + b*x + c;
+      text = `f(x)=${a}x²+${b}x+${c}, f(${x})`;
+
+    } else if (type === 'chained_sq') {
+      const a = ri(2,7), b = ri(1,10), c = ri(2,6), d = ri(1,20);
+      answer = (a*a + b)*c - d;
+      text = `(${a}² + ${b}) × ${c} − ${d}`;
+
+    // ── Sayı teorisi ────────────────────────────────────────────────
+    } else if (type === 'sum_sq') {
+      // 1² + 2² + … + n² = n(n+1)(2n+1)/6
+      const n = choice([4,5,6,7,8]);
+      answer = n*(n+1)*(2*n+1)/6;
+      text = `1² + 2² + … + ${n}²`;
+
+    } else if (type === 'lcm') {
+      // EKOK — seçilmiş çiftler (akılda tutulabilir)
+      const pairs = [[4,6,12],[6,8,24],[8,12,24],[5,6,30],[4,10,20],[3,7,21],[6,9,18],[10,15,30],[8,10,40],[4,14,28]];
+      const [a,b,val] = choice(pairs);
+      answer = val; text = `EKOK(${a}, ${b})`;
+
+    // ── Trigonometri (tam sayı sonuç) ──────────────────────────────
+    } else if (type === 'trig_int') {
+      const cases = [
+        {t:'2 × sin(30°)',ans:1},{t:'4 × cos(60°)',ans:2},
+        {t:'6 × sin(90°)',ans:6},{t:'10 × sin(30°)',ans:5},
+        {t:'12 × cos(60°)',ans:6},{t:'tan(45°) × 9',ans:9},
+        {t:'sin²(30°) × 20',ans:5},{t:'cos²(60°) × 16',ans:4},
+        {t:'sin(90°) + cos(0°)',ans:2},{t:'8 × cos(0°)',ans:8},
+        {t:'sin(0°) + tan(45°)',ans:1},{t:'cos²(45°) × 10',ans:5},
+        {t:'4 × sin(30°) + 3',ans:5},{t:'2 × cos(0°) × 7',ans:14},
+      ];
+      const tc = choice(cases);
+      answer = tc.ans; text = tc.t;
+
+    // ── Fibonacci ──────────────────────────────────────────────────
+    } else if (type === 'fibonacci') {
+      const fib = [0,1,1,2,3,5,8,13,21,34,55,89,144];
+      const n = choice([6,7,8,9,10,11,12]);
+      answer = fib[n]; text = `F(${n})`;
+
+    // ── İç içe kuvvet ──────────────────────────────────────────────
+    } else if (type === 'nested_pow') {
+      const cases = [
+        {t:'(2^3)^2',ans:64},{t:'(3^2)^2',ans:81},{t:'(2^2)^3',ans:64},
+        {t:'(2^4)^2',ans:256},{t:'(3^2)^3',ans:729},{t:'(2^3)^3',ans:512},
+        {t:'(5^2)^2',ans:625},{t:'(2^2)^4',ans:256},
+      ];
+      const nc = choice(cases);
+      answer = nc.ans; text = nc.t;
+
+    // ── Modüler aritmetik ──────────────────────────────────────────
+    } else { // modular
+      const cases = [
+        {t:'2^10 mod 7',ans:2},{t:'3^4 mod 5',ans:1},{t:'7^2 mod 10',ans:9},
+        {t:'5^3 mod 7',ans:6},{t:'2^8 mod 3',ans:1},{t:'4^3 mod 9',ans:1},
+        {t:'6^2 mod 7',ans:1},{t:'3^5 mod 4',ans:3},{t:'2^12 mod 5',ans:1},
+        {t:'11^2 mod 6',ans:1},{t:'2^6 mod 9',ans:1},
+      ];
+      const mc = choice(cases);
+      answer = mc.ans; text = mc.t;
+    }
+  }
+
+  return { text, answer };
+}
+
+// ===== SOUND EFFECTS (Web Audio API — no files needed) =====
+let _audioCtx = null;
+function getCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+function sfx(type) {
+  if (!state.settings.sfx) return;
+  try {
+    const ctx = getCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime;
+
+    const play = (freq, dur, shape = 'square', gain = 0.18) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = shape;
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(gain, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.start(t); o.stop(t + dur);
+    };
+
+    const playFreqs = (freqs, dur, gap = 0.12, shape = 'square', gain = 0.18) => {
+      freqs.forEach((f, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = shape;
+        const st = t + i * gap;
+        o.frequency.setValueAtTime(f, st);
+        g.gain.setValueAtTime(gain, st);
+        g.gain.exponentialRampToValueAtTime(0.001, st + dur);
+        o.start(st); o.stop(st + dur);
+      });
+    };
+
+    switch (type) {
+      case 'correct':
+        // Happy ascending ding
+        playFreqs([523, 659, 784], 0.14, 0.09, 'sine', 0.22);
+        break;
+      case 'wrong':
+        // Low buzzer
+        playFreqs([220, 180], 0.18, 0.16, 'sawtooth', 0.15);
+        break;
+      case 'goal':
+        // Crowd roar imitation: quick high bursts
+        playFreqs([523, 659, 784, 1047, 784, 1047], 0.12, 0.07, 'sine', 0.20);
+        break;
+      case 'opponentGoal':
+        playFreqs([330, 262, 220], 0.22, 0.15, 'sawtooth', 0.15);
+        break;
+      case 'post':
+        // Metallic clang: short noise burst with pitch drop
+        play(880, 0.04, 'square', 0.25);
+        setTimeout(() => play(440, 0.2, 'sawtooth', 0.10), 40);
+        break;
+      case 'whistle':
+        // Referee whistle: high sine with vibrato
+        {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          const lfo = ctx.createOscillator();
+          const lfoGain = ctx.createGain();
+          lfo.connect(lfoGain); lfoGain.connect(o.frequency);
+          o.connect(g); g.connect(ctx.destination);
+          o.type = 'sine'; o.frequency.setValueAtTime(2400, t);
+          lfo.type = 'sine'; lfo.frequency.setValueAtTime(8, t);
+          lfoGain.gain.setValueAtTime(60, t);
+          g.gain.setValueAtTime(0.18, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+          o.start(t); o.stop(t + 0.7);
+          lfo.start(t); lfo.stop(t + 0.7);
+        }
+        break;
+      case 'kick':
+        // Thump
+        {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type = 'sine';
+          o.frequency.setValueAtTime(150, t);
+          o.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+          g.gain.setValueAtTime(0.30, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+          o.start(t); o.stop(t + 0.2);
+        }
+        break;
+      case 'tick':
+        play(880, 0.04, 'square', 0.08);
+        break;
+      case 'coin':
+        playFreqs([1200, 900, 1100, 800], 0.10, 0.06, 'sine', 0.15);
+        break;
+    }
+  } catch (_) {}
+}
+
+// ===== MÜZİK MOTORu (Web Audio API — 174 BPM, La Minör) =====
+const MUS = { ctx: null, gain: null, timer: null, track: null };
+
+const _B = 60/174, _E = _B/2, _Q = _B, _H = _B*2, _S = _B/4;
+
+const _F = {
+  A2:110, B2:123.47, C3:130.81, D3:146.83, E3:164.81, F2:87.31, F3:174.61, G2:98, G3:196,
+  A3:220, B3:246.94, C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392, A4:440, B4:493.88,
+  C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:784, A5:880, B5:987.77, C6:1046.5, _:0
+};
+
+function _mn(f,t,d,tp,v){ // musNote
+  if(!f||!MUS.ctx)return;
+  const o=MUS.ctx.createOscillator(),g=MUS.ctx.createGain();
+  o.connect(g);g.connect(MUS.gain);o.type=tp;o.frequency.value=f;
+  const a=Math.min(0.008,d*0.08);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+a);
+  g.gain.setValueAtTime(v,t+d*0.68);g.gain.exponentialRampToValueAtTime(0.0001,t+d*0.95);
+  o.start(t);o.stop(t+d);
+}
+function _mk(t){ // kick
+  if(!MUS.ctx)return;
+  const o=MUS.ctx.createOscillator(),g=MUS.ctx.createGain();
+  o.connect(g);g.connect(MUS.gain);o.type='sine';
+  o.frequency.setValueAtTime(200,t);o.frequency.exponentialRampToValueAtTime(35,t+0.07);
+  g.gain.setValueAtTime(0.24,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.08);
+  o.start(t);o.stop(t+0.1);
+}
+function _msn(t){ // snare
+  if(!MUS.ctx)return;
+  const buf=MUS.ctx.createBuffer(1,Math.ceil(MUS.ctx.sampleRate*0.12),MUS.ctx.sampleRate);
+  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const s=MUS.ctx.createBufferSource(),f=MUS.ctx.createBiquadFilter(),g=MUS.ctx.createGain();
+  s.buffer=buf;f.type='bandpass';f.frequency.value=1800;f.Q.value=0.8;
+  s.connect(f);f.connect(g);g.connect(MUS.gain);
+  g.gain.setValueAtTime(0.09,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.10);
+  s.start(t);s.stop(t+0.13);
+}
+function _mh(t,v=0.04){ // hihat
+  if(!MUS.ctx)return;
+  const buf=MUS.ctx.createBuffer(1,Math.ceil(MUS.ctx.sampleRate*0.04),MUS.ctx.sampleRate);
+  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const s=MUS.ctx.createBufferSource(),f=MUS.ctx.createBiquadFilter(),g=MUS.ctx.createGain();
+  s.buffer=buf;f.type='highpass';f.frequency.value=5000;
+  s.connect(f);f.connect(g);g.connect(MUS.gain);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
+  s.start(t);s.stop(t+0.05);
+}
+function _mdrums(t0,bars){
+  for(let b=0;b<bars;b++){
+    const bt=t0+b*_Q*4;
+    _mk(bt);_mk(bt+_Q*2);_msn(bt+_Q);_msn(bt+_Q*3);
+    for(let i=0;i<8;i++)_mh(bt+i*_E,i%2===0?0.05:0.025);
+  }
+}
+
+// ── MENÜ MÜZİĞİ (8 bar, karmaşık) ──────────────────────────────────
+const _menuMel=[
+  [_F.E5,_E],[_F.A5,_E],[_F.G5,_E],[_F.E5,_E],[_F.A5,_S],[_F.B5,_S],[_F.A5,_S],[_F.G5,_S],[_F.E5,_E],
+  [_F.D5,_E],[_F.G5,_E],[_F.F5,_E],[_F.D5,_E],[_F.G5,_S],[_F.A5,_S],[_F.G5,_S],[_F.F5,_S],[_F.D5,_E],
+  [_F.E5,_E],[_F.G5,_E],[_F.A5,_E],[_F.G5,_E],[_F.C5,_Q],[_F.E5,_Q],
+  [_F.B4,_E],[_F.E5,_E],[_F.D5,_E],[_F.B4,_E],[_F.G4,_E],[_F.A4,_E],[_F.B4,_Q],
+  [_F.A5,_S],[_F.G5,_S],[_F.E5,_S],[_F.G5,_S],[_F.A5,_E],[_F.E5,_E],[_F.C5,_E],[_F.D5,_E],
+  [_F.C5,_E],[_F.F5,_E],[_F.E5,_E],[_F.C5,_E],[_F.F5,_S],[_F.G5,_S],[_F.A5,_S],[_F.G5,_S],[_F.F5,_E],
+  [_F.B5,_E],[_F.A5,_E],[_F.G5,_E],[_F.A5,_E],[_F.B5,_E],[_F.C6,_E],[_F.B5,_E],[_F.A5,_E],
+  [_F.E5,_Q],[_F.A5,_S],[_F.G5,_S],[_F.E5,_Q],[_F.A4,_H],
+];
+const _menuHar=[
+  [_F.A4,_E],[_F.E5,_E],[_F.C5,_E],[_F.A4,_E],[_F.E5,_S],[_F.F5,_S],[_F.E5,_S],[_F.D5,_S],[_F.C5,_E],
+  [_F.B4,_E],[_F.D5,_E],[_F.G4,_E],[_F.B4,_E],[_F.D5,_S],[_F.E5,_S],[_F.D5,_S],[_F.C5,_S],[_F.B4,_E],
+  [_F.C5,_E],[_F.E5,_E],[_F.G4,_E],[_F.E5,_E],[_F.G4,_Q],[_F.C5,_Q],
+  [_F.G4,_E],[_F.B4,_E],[_F.A4,_E],[_F.G4,_E],[_F.E4,_E],[_F.F4,_E],[_F.G4,_Q],
+  [_F.E5,_S],[_F.D5,_S],[_F.C5,_S],[_F.D5,_S],[_F.E5,_E],[_F.A4,_E],[_F.A4,_E],[_F.B4,_E],
+  [_F.A4,_E],[_F.C5,_E],[_F.A4,_E],[_F.F4,_E],[_F.A4,_S],[_F.B4,_S],[_F.C5,_S],[_F.B4,_S],[_F.A4,_E],
+  [_F.G5,_E],[_F.F5,_E],[_F.E5,_E],[_F.F5,_E],[_F.G5,_E],[_F.A5,_E],[_F.G5,_E],[_F.F5,_E],
+  [_F.C5,_Q],[_F.E5,_S],[_F.D5,_S],[_F.C5,_Q],[_F.E4,_H],
+];
+const _menuBas=[
+  [_F.A2,_E],[_F.A3,_E],[_F.E3,_E],[_F.A3,_E],[_F.A2,_E],[_F.G2,_E],[_F.A2,_E],[_F.E3,_E],
+  [_F.G2,_E],[_F.G2,_E],[_F.D3,_E],[_F.G2,_E],[_F.G2,_E],[_F.F2,_E],[_F.G2,_E],[_F.D3,_E],
+  [_F.C3,_E],[_F.C3,_E],[_F.G2,_E],[_F.C3,_E],[_F.C3,_Q],[_F.E3,_Q],
+  [_F.E3,_E],[_F.E3,_E],[_F.B2,_E],[_F.E3,_E],[_F.E3,_E],[_F.D3,_E],[_F.E3,_E],[_F.G3,_E],
+  [_F.A2,_E],[_F.A3,_E],[_F.E3,_E],[_F.A3,_E],[_F.A2,_E],[_F.C3,_E],[_F.E3,_E],[_F.A3,_E],
+  [_F.F2,_E],[_F.F2,_E],[_F.C3,_E],[_F.F2,_E],[_F.F2,_E],[_F.E3,_E],[_F.F2,_E],[_F.A3,_E],
+  [_F.G2,_E],[_F.G2,_E],[_F.D3,_E],[_F.G2,_E],[_F.G2,_E],[_F.A3,_E],[_F.B3,_E],[_F.C4,_E],
+  [_F.A2,_Q],[_F.E3,_Q],[_F.A2,_H],
+];
+
+// ── MAÇ MÜZİĞİ (4 bar, sade, odaklanmaya uygun) ────────────────────
+const _matchMel=[
+  [_F.E5,_E],[_F.A5,_E],[_F.G5,_E],[_F.E5,_E],[_F.A5,_Q],[_F.E5,_Q],
+  [_F.D5,_E],[_F.G5,_E],[_F.F5,_E],[_F.D5,_E],[_F.G5,_Q],[_F.D5,_Q],
+  [_F.C5,_E],[_F.E5,_E],[_F.G5,_E],[_F.A5,_E],[_F.G5,_Q],[_F.E5,_Q],
+  [_F.B4,_E],[_F.E5,_E],[_F.D5,_E],[_F.B4,_E],[_F.A4,_H],
+];
+const _matchHar=[
+  [_F.A4,_E],[_F.C5,_E],[_F.E5,_E],[_F.C5,_E],[_F.A4,_Q],[_F.C5,_Q],
+  [_F.G4,_E],[_F.B4,_E],[_F.D5,_E],[_F.B4,_E],[_F.G4,_Q],[_F.B4,_Q],
+  [_F.C5,_E],[_F.E5,_E],[_F.G4,_E],[_F.F5,_E],[_F.E5,_Q],[_F.C5,_Q],
+  [_F.G4,_E],[_F.B4,_E],[_F.A4,_E],[_F.G4,_E],[_F.E4,_H],
+];
+const _matchBas=[
+  [_F.A2,_Q],[_F.A3,_Q],[_F.E3,_Q],[_F.A3,_Q],
+  [_F.G2,_Q],[_F.G3,_Q],[_F.D3,_Q],[_F.G3,_Q],
+  [_F.C3,_Q],[_F.G3,_Q],[_F.A2,_Q],[_F.E3,_Q],
+  [_F.E3,_Q],[_F.B2,_Q],[_F.A2,_H],
+];
+
+function _scheduleTrack(t0, mel, har, bas, bars){
+  if(!MUS.ctx)return 0;
+  let t=t0;
+  mel.forEach(([f,d])=>{ _mn(f,t,d*0.83,'square',0.09); t+=d; });
+  const total=t-t0;
+  t=t0; har.forEach(([f,d])=>{ _mn(f,t,d*0.80,'triangle',0.052); t+=d; });
+  t=t0; bas.forEach(([f,d])=>{ _mn(f,t,d*0.65,'sawtooth',0.10); t+=d; });
+  _mdrums(t0,bars);
+  return total;
+}
+
+function _initCtx(){
+  if(!MUS.ctx){
+    MUS.ctx=new(window.AudioContext||window.webkitAudioContext)();
+    MUS.gain=MUS.ctx.createGain();
+    MUS.gain.gain.value=0.52;
+    MUS.gain.connect(MUS.ctx.destination);
+  }
+  if(MUS.ctx.state==='suspended')MUS.ctx.resume();
+}
+
+function stopMusic(){
+  clearTimeout(MUS.timer); MUS.timer=null; MUS.track=null;
+  if(MUS.gain){ try{ MUS.gain.gain.setTargetAtTime(0,MUS.ctx.currentTime,0.12); }catch(e){} }
+  setTimeout(()=>{ if(MUS.ctx){ try{MUS.ctx.close();}catch(e){} MUS.ctx=null; MUS.gain=null; } },350);
+}
+
+function startMenuMusic(){
+  if(!state.settings.music)return;
+  stopMusic();
+  setTimeout(()=>{
+    _initCtx(); MUS.track='menu';
+    (function loop(){
+      if(MUS.track!=='menu'||!MUS.ctx)return;
+      const dur=_scheduleTrack(MUS.ctx.currentTime+0.04,_matchMel,_matchHar,_matchBas,4);
+      MUS.timer=setTimeout(loop,(dur-0.04)*1000);
+    })();
+  },400);
+}
+
+function startMatchMusic(){
+  if(!state.settings.music)return;
+  stopMusic();
+  setTimeout(()=>{
+    _initCtx(); MUS.track='match';
+    (function loop(){
+      if(MUS.track!=='match'||!MUS.ctx)return;
+      const dur=_scheduleTrack(MUS.ctx.currentTime+0.04,_menuMel,_menuHar,_menuBas,8);
+      MUS.timer=setTimeout(loop,(dur-0.04)*1000);
+    })();
+  },400);
+}
+
+// ===== CONFETTI =====
+function launchConfetti(colors = ['#f9e000','#20d060','#3b8cf8','#f04040','#ff9030','#ffffff']) {
+  const canvas = $('#confetti-canvas');
+  if (!canvas) return;
+  const app = $('#app');
+  canvas.width  = app.clientWidth;
+  canvas.height = app.clientHeight;
+  const ctx = canvas.getContext('2d');
+  const N = 80;
+  const pieces = Array.from({length: N}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 60,
+    r: 4 + Math.random() * 5,
+    d: 2 + Math.random() * 3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    tilt: (Math.random() - 0.5) * 0.3,
+    tiltSpeed: (Math.random() - 0.5) * 0.08,
+    drift: (Math.random() - 0.5) * 1.5,
+    opacity: 1,
+  }));
+  let frame = 0;
+  const MAX = 120;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.save();
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.tilt);
+      ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+      ctx.restore();
+      p.y += p.d;
+      p.x += p.drift;
+      p.tilt += p.tiltSpeed;
+      if (frame > MAX * 0.6) p.opacity -= 0.025;
+    });
+    frame++;
+    if (frame < MAX) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  requestAnimationFrame(draw);
+}
+
+// ===== MAÇ İÇİ KONTROL BUTONLARI =====
+$('#btn-home').addEventListener('click', () => {
+  // Soru/fault overlay açıksa önce kapat (timer durmaz, sadece görsel)
+  $('#quit-overlay').classList.add('active');
+});
+
+$('#quit-cancel').addEventListener('click', () => {
+  $('#quit-overlay').classList.remove('active');
+});
+
+$('#quit-confirm').addEventListener('click', () => {
+  $('#quit-overlay').classList.remove('active');
+  // Tüm timer'ları temizle
+  const m = state.match;
+  if (m) {
+    if (m.qTimer) { clearTimeout(m.qTimer); m.qTimer = null; }
+    if (m.faultTimer) { clearTimeout(m.faultTimer); m.faultTimer = null; }
+    if (m.chooseTimer) { clearTimeout(m.chooseTimer); m.chooseTimer = null; }
+  }
+  // Overlay'leri kapat
+  $('#q-overlay').classList.remove('active');
+  $('#fault-overlay').classList.remove('active');
+  hideBanner();
+  // Menüye dön (showScreen zaten müziği başlatır)
+  showScreen('menu');
+});
+
+$('#btn-sound').addEventListener('click', () => {
+  // Switch'leri mevcut state'e göre senkronize et
+  $('#match-music-switch').className = 'switch' + (state.settings.music ? ' on' : '');
+  $('#match-sfx-switch').className   = 'switch' + (state.settings.sfx   ? ' on' : '');
+  $('#sound-overlay').classList.add('active');
+});
+
+$('#sound-close').addEventListener('click', () => {
+  $('#sound-overlay').classList.remove('active');
+});
+
+// Maç içi müzik switch
+$('#match-music-switch').addEventListener('click', function() {
+  this.classList.toggle('on');
+  const on = this.classList.contains('on');
+  state.settings.music = on;
+  // Ayarlar ekranındaki switch'i de senkronize et
+  document.querySelector('[data-toggle="music"]').className = 'switch' + (on ? ' on' : '');
+  if (on) { startMatchMusic(); } else { stopMusic(); }
+});
+
+// Maç içi sfx switch
+$('#match-sfx-switch').addEventListener('click', function() {
+  this.classList.toggle('on');
+  const on = this.classList.contains('on');
+  state.settings.sfx = on;
+  document.querySelector('[data-toggle="sfx"]').className = 'switch' + (on ? ' on' : '');
+});
+
+// ===== MAIN MENU =====
+$$('#screen-menu .menu-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    const a = b.dataset.action;
+    if (b.classList.contains('disabled')) return;
+    if (a === 'singleMatch') startTeamSelect();
+    if (a === 'settings') showScreen('settings');
+  });
+});
+
+// ===== SETTINGS =====
+$$('#screen-settings [data-back]').forEach(b => b.addEventListener('click', () => showScreen('menu')));
+$$('#difficulty-grid .diff-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    $$('#difficulty-grid .diff-btn').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.settings.difficulty = b.dataset.diff;
+  });
+});
+$$('[data-time]').forEach(b => {
+  b.addEventListener('click', () => {
+    b.parentNode.querySelectorAll('.diff-btn').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.settings.timeMultiplier = parseFloat(b.dataset.time);
+  });
+});
+$$('[data-lang]').forEach(b => {
+  b.addEventListener('click', () => {
+    $$('[data-lang]').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.settings.lang = b.dataset.lang;
+    applyLang();
+    // Re-render team stage if on that screen
+    if (state.screen === 'teamselect') {
+      $('#team-stage').textContent = state.ts.stage === 'player' ? t('team.your') : t('team.opp');
+    }
+  });
+});
+$$('.switch').forEach(s => {
+  s.addEventListener('click', () => {
+    s.classList.toggle('on');
+    const val = s.classList.contains('on');
+    state.settings[s.dataset.toggle] = val;
+    // Müzik toggle'ı anlık etki etsin
+    if (s.dataset.toggle === 'music') {
+      if (val) {
+        // Hangi ekrandaysak ona göre müzik başlat
+        if (state.screen === 'menu' || state.screen === 'settings' ||
+            state.screen === 'teamselect' || state.screen === 'cointoss') {
+          startMenuMusic();
+        } else if (state.screen === 'match') {
+          startMatchMusic();
+        }
+      } else {
+        stopMusic();
+      }
+    }
+  });
+});
+
+// ===== TEAM SELECT =====
+function startTeamSelect() {
+  state.ts = { stage: 'player', playerTeam: null, opponentTeam: null };
+  renderTeams();
+  showScreen('teamselect');
+}
+
+function renderTeams() {
+  const grid = $('#team-grid');
+  grid.innerHTML = '';
+  $('#team-stage').textContent = state.ts.stage === 'player' ? t('team.your') : t('team.opp');
+  TEAMS.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    if (state.ts.stage === 'opponent' && state.ts.playerTeam === t) card.classList.add('taken');
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <div class="team-crest" style="background: linear-gradient(135deg, ${t.c1}, ${t.c2})">${t.short}</div>
+      <div class="team-name">${t.name}</div>
+    `;
+    card.addEventListener('click', () => {
+      grid.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.ts.selected = t;
+      $('#team-confirm').disabled = false;
+    });
+    grid.appendChild(card);
+  });
+  $('#team-confirm').disabled = true;
+  state.ts.selected = null;
+}
+
+$('#team-confirm').addEventListener('click', () => {
+  if (!state.ts.selected) return;
+  if (state.ts.stage === 'player') {
+    state.ts.playerTeam = state.ts.selected;
+    state.ts.stage = 'opponent';
+    renderTeams();
+  } else {
+    state.ts.opponentTeam = state.ts.selected;
+    startCoinToss();
+  }
+});
+$$('#screen-teamselect [data-back]').forEach(b => b.addEventListener('click', () => showScreen('menu')));
+
+// ===== COIN TOSS =====
+function startCoinToss() {
+  state.toss = { picked: null, result: null };
+  $('#toss-coin').textContent = '$';
+  $('#toss-coin').classList.remove('flipping');
+  $('#toss-result').textContent = '';
+  $('#toss-choices').style.display = 'flex';
+  $('#toss-prompt').textContent = 'Bir taraf seç';
+  showScreen('cointoss');
+}
+
+$$('[data-toss]').forEach(b => {
+  b.addEventListener('click', () => {
+    const picked = b.dataset.toss;
+    state.toss.picked = picked;
+    $('#toss-choices').style.display = 'none';
+    $('#toss-prompt').textContent = `Sen: ${picked.toUpperCase()}`;
+    const coin = $('#toss-coin');
+    coin.classList.add('flipping');
+    sfx('coin');
+    setTimeout(() => {
+      const r = Math.random() < 0.5 ? 'yazi' : 'tura';
+      state.toss.result = r;
+      coin.textContent = r === 'yazi' ? '✦' : '◉';
+      coin.classList.remove('flipping');
+      const won = picked === r;
+      const resultLabel = r === 'yazi' ? t('toss.heads') : t('toss.tails');
+      $('#toss-result').innerHTML = `${t('toss.result')}<span style="color:var(--accent)">${resultLabel}</span><br>` +
+        (won
+          ? `<span style="color:var(--green)">${t('toss.won')}</span>`
+          : `<span style="color:var(--red)">${t('toss.lost')}</span>`);
+      setTimeout(() => {
+        const btn = document.createElement('button');
+        btn.className = 'confirm-btn';
+        btn.textContent = t('toss.kickoff');
+        btn.style.marginTop = '24px';
+        btn.style.maxWidth = '280px';
+        btn.addEventListener('click', () => { btn.remove(); startMatch(won); });
+        $('#screen-cointoss').appendChild(btn);
+      }, 1100);
+    }, 1200);
+  });
+});
+
+// ===== MATCH =====
+const FAULT_TIME = 2000; // ms
+const FULL_TIME_MIN = 90;
+
+// Kısa yol: mevcut maçın bölge sayısı
+function N() { return state.match ? state.match.zones : state.settings.zones; }
+
+// Sahayı dinamik olarak zones ayarına göre oluştur
+function buildField() {
+  const field = $('#field');
+  const z = state.settings.zones;
+  // Tüm eski zone hücrelerini kaldır (kale hücreleri data-pos=-99/99, onları bırak)
+  $$('.field-cell:not(.goal)').forEach(c => c.remove());
+  // Topu da geçici çıkar, sona yeniden ekle
+  const ball = $('#ball');
+  ball.remove();
+
+  // grid sütunları: sol kale + z×2 bölge + sağ kale
+  field.style.gridTemplateColumns = `28px repeat(${z * 2}, 1fr) 28px`;
+
+  const rightGoal = field.querySelector('[data-pos="99"]');
+
+  // Sol yarı: -z .. -1
+  for (let p = -z; p <= -1; p++) {
+    const cell = document.createElement('div');
+    cell.className = 'field-cell' + (p === -1 ? ' center' : '');
+    cell.dataset.pos = p;
+    cell.textContent = Math.abs(p);
+    field.insertBefore(cell, rightGoal);
+  }
+  // Sağ yarı: 1 .. z
+  for (let p = 1; p <= z; p++) {
+    const cell = document.createElement('div');
+    cell.className = 'field-cell';
+    cell.dataset.pos = p;
+    cell.textContent = p;
+    field.insertBefore(cell, rightGoal);
+  }
+
+  field.appendChild(ball);
+}
+
+function startMatch(playerStarts) {
+  state.match = {
+    score: { p: 0, o: 0 },
+    cards: { p: 0, o: 0 },
+    time: 0,
+    half: 1,
+    pos: 0,
+    zones: state.settings.zones,   // maç başlarken ayarı kopyala
+    possession: playerStarts ? 'p' : 'o',
+    state: 'kickoff',
+    pendingPassTarget: null,
+    currentAction: null,
+    currentQ: null,
+    qTimer: null,
+    answerBuffer: '',
+    answerSign: 1,
+    faultTimer: null,
+    chooseTimer: null,
+    stoppageLeft: 0,
+    lastChampType: null,   // üst üste aynı Champs League sorusu gelmesin
+  };
+  buildField();
+  renderHUD();
+  startMatchMusic();
+  showScreen('match');
+  // Wait one frame so the field has its real width before placing the ball
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      renderField();
+      renderPanel();
+      setTimeout(() => askKickoffQuestion(), 600);
+    });
+  });
+}
+
+function renderHUD() {
+  const m = state.match;
+  const p = state.ts.playerTeam, o = state.ts.opponentTeam;
+  $('#hud-crest-p').style.background = `linear-gradient(135deg, ${p.c1}, ${p.c2})`;
+  $('#hud-crest-p').textContent = p.short;
+  $('#hud-name-p').textContent = p.name;
+  $('#hud-crest-o').style.background = `linear-gradient(135deg, ${o.c1}, ${o.c2})`;
+  $('#hud-crest-o').textContent = o.short;
+  $('#hud-name-o').textContent = o.name;
+  $('#hud-score').textContent = `${m.score.p} - ${m.score.o}`;
+  // Uzatma göstergesi
+  let timeLabel;
+  if (m.half === 2 && m.stoppageLeft > 0) {
+    timeLabel = `${m.half}. ${t('hud.half')} · 90+${2 - m.stoppageLeft}'`;
+  } else if (m.half === 2 && m.time >= FULL_TIME_MIN) {
+    timeLabel = `${m.half}. ${t('hud.half')} · 90'`;
+  } else {
+    timeLabel = `${m.half}. ${t('hud.half')} · ${m.time}'`;
+  }
+  $('#hud-time').textContent = timeLabel;
+  const pc = $('#hud-cards-p'); pc.innerHTML = '';
+  for (let i = 0; i < m.cards.p; i++) pc.innerHTML += '<span class="yc"></span>';
+  const oc = $('#hud-cards-o'); oc.innerHTML = '';
+  for (let i = 0; i < m.cards.o; i++) oc.innerHTML += '<span class="yc"></span>';
+}
+
+function renderField() {
+  const m = state.match;
+  const ball = $('#ball');
+  const field = $('#field');
+  const w = field.clientWidth || field.getBoundingClientRect().width;
+  if (!w) { setTimeout(renderField, 50); return; }
+  const z = m.zones;
+  const goalW = 28;
+  const innerW = w - goalW * 2;
+  // Build pos list dynamically: [-z..-1, 1..z]
+  const posList = [];
+  for (let p = -z; p <= -1; p++) posList.push(p);
+  for (let p = 1; p <= z; p++) posList.push(p);
+
+  let leftPx;
+  if (m.pos === 0) {
+    leftPx = goalW + innerW * (z / (z * 2));
+  } else if (m.pos === -99) {
+    leftPx = goalW / 2;
+  } else if (m.pos === 99) {
+    leftPx = w - goalW / 2;
+  } else {
+    const idx = posList.indexOf(m.pos);
+    leftPx = goalW + innerW * (idx + 0.5) / (z * 2);
+  }
+  ball.style.left = leftPx + 'px';
+
+  const team = m.possession === 'p' ? state.ts.playerTeam : state.ts.opponentTeam;
+  const who = m.possession === 'p' ? t('pos.you') : t('pos.opp');
+  $('#who').textContent = `${t('pos.prefix')}${who} (${team.name})`;
+}
+
+window.addEventListener('resize', () => { if (state.screen === 'match') renderField(); });
+
+function renderPanel() {
+  const panel = $('#panel');
+  const m = state.match;
+  panel.innerHTML = '';
+  clearChooseTimer();
+
+  if (m.state === 'choose' && m.possession === 'p') {
+    const z = m.zones;
+    const distToGoal = m.pos > 0 ? (z - m.pos + 1) : 99;
+    const canShoot = m.pos > 0;
+    const canPass = m.pos < z;
+
+    // Timer bar
+    const timerWrap = document.createElement('div');
+    timerWrap.className = 'choose-timer-wrap';
+    timerWrap.innerHTML = '<div class="choose-timer-bar" id="choose-timer-bar"></div>';
+    panel.appendChild(timerWrap);
+
+    const row = document.createElement('div');
+    row.className = 'action-row';
+
+    const pas = document.createElement('button');
+    pas.className = 'action-btn pas';
+    pas.innerHTML = `<span class="icon">⇢</span><span class="label">PAS</span><span class="meta">hedef seç</span>`;
+    if (!canPass) pas.disabled = true;
+    pas.addEventListener('click', () => startPass());
+    row.appendChild(pas);
+
+    const sut = document.createElement('button');
+    sut.className = 'action-btn sut';
+    const shotDiff = canShoot ? diffFromOrder(diffOrder(state.settings.difficulty) + (distToGoal - 1)) : null;
+    sut.innerHTML = `<span class="icon">⚽</span><span class="label">ŞUT</span><span class="meta">${canShoot ? diffLabel(shotDiff) : 'çok uzak'}</span>`;
+    if (!canShoot) sut.disabled = true;
+    sut.addEventListener('click', () => doShot());
+    row.appendChild(sut);
+
+    const drb = document.createElement('button');
+    drb.className = 'action-btn dribling';
+    drb.innerHTML = `<span class="icon">⤳</span><span class="label">DRİBLİNG</span><span class="meta">${diffLabel(state.settings.difficulty)}</span>`;
+    if (m.pos === z) drb.disabled = true;
+    drb.addEventListener('click', () => doDribble());
+    row.appendChild(drb);
+
+    panel.appendChild(row);
+
+    startChooseTimer(() => {
+      // Süre doldu — geçerli aksiyonlardan rastgele birini otomatik seç
+      if (m.state !== 'choose' || m.possession !== 'p') return;
+      const valid = [];
+      if (m.pos < 5) valid.push('dribling');
+      if (canShoot) valid.push('sut');
+      if (canPass) valid.push('pas');
+      if (valid.length === 0) return;
+      const pick = valid[Math.floor(Math.random() * valid.length)];
+
+      // clearChooseTimer burada çağrılmaz — zaten süresi doldu, timer yok.
+      // Doğrudan state geçişi yap:
+      if (pick === 'dribling') {
+        sfx('kick');
+        m.currentAction = 'dribling';
+        m.state = 'question';
+        m.currentQ = generateProblem(state.settings.difficulty);
+        showQuestion('DRİBLİNG · OTOMATİK', state.settings.difficulty);
+      } else if (pick === 'sut') {
+        const dist = m.pos > 0 ? (5 - m.pos + 1) : 1;
+        const lvl = diffFromOrder(diffOrder(state.settings.difficulty) + (dist - 1));
+        m.currentAction = 'sut';
+        m.state = 'question';
+        m.currentQ = generateProblem(lvl);
+        showQuestion(`ŞUT · OTOMATİK · KALEDEN ${dist} BÖLGE`, lvl);
+      } else {
+        m.pendingPassTarget = Math.min(m.zones, m.pos + 1);
+        m.currentAction = 'pas';
+        m.state = 'question';
+        m.currentQ = generateProblem(state.settings.difficulty);
+        showQuestion('PAS · OTOMATİK · 1 BÖLGE ÖNE', state.settings.difficulty);
+      }
+    });
+  }
+  else if (m.state === 'pickPassTarget') {
+    const info = document.createElement('div');
+    info.className = 'info-card';
+    info.innerHTML = `<div class="small">PAS — Hedef Bölge</div><div class="big">İLERİDE BİR BÖLGE SEÇ</div>`;
+
+    const timerWrap = document.createElement('div');
+    timerWrap.className = 'choose-timer-wrap';
+    timerWrap.style.marginTop = '10px';
+    timerWrap.style.marginBottom = '0';
+    timerWrap.innerHTML = '<div class="choose-timer-bar" id="choose-timer-bar"></div>';
+    info.appendChild(timerWrap);
+
+    panel.appendChild(info);
+
+    const targets = [];
+    for (let p = m.pos + 1; p <= m.zones; p++) targets.push(p);
+    $$('.field-cell').forEach(cell => cell.classList.remove('targetable'));
+    targets.forEach(p => {
+      const cell = document.querySelector(`.field-cell[data-pos="${p}"]`);
+      if (cell) {
+        cell.classList.add('targetable');
+        cell.addEventListener('click', () => onPassTargetClick(p), { once: true });
+      }
+    });
+
+    startChooseTimer(() => {
+      if (m.state !== 'pickPassTarget') return;
+      const auto = Math.min(m.zones, m.pos + 1);
+      onPassTargetClick(auto);
+    });
+  }
+  else if (m.state === 'kickoff') {
+    const info = document.createElement('div');
+    info.className = 'info-card';
+    info.innerHTML = `<div class="small">SANTRA</div><div class="big">İLK SORU GELİYOR…</div>`;
+    panel.appendChild(info);
+  }
+  else if (m.possession === 'o' && (m.state === 'choose' || m.state === 'defense')) {
+    const info = document.createElement('div');
+    info.className = 'info-card';
+    info.innerHTML = `<div class="small">SAVUNMA</div><div class="big">TOPU AL!</div>`;
+    panel.appendChild(info);
+    // Note: askDefenseQuestion is always called explicitly by the caller (endTurn / resolveFault),
+    // not from here, to avoid double-fire.
+  }
+  else if (m.state === 'half' || m.state === 'full') {
+    // nothing
+  }
+  else if (m.state === 'penalty') {
+    const info = document.createElement('div');
+    info.className = 'info-card';
+    info.innerHTML = `<div class="small">2. SARI → KIRMIZI</div><div class="big">RAKİBE PENALTI!</div>`;
+    panel.appendChild(info);
+  }
+}
+
+function startChooseTimer(onTimeout) {
+  const m = state.match;
+  clearChooseTimer();
+  const total = 5000 * state.settings.timeMultiplier;
+  const bar = $('#choose-timer-bar');
+  if (bar) {
+    bar.style.transition = 'none';
+    bar.style.transform = 'scaleX(1)';
+    getComputedStyle(bar).transform; // force reflow
+    bar.style.transition = `transform ${total}ms linear`;
+    bar.style.transform = 'scaleX(0)';
+  }
+  m.chooseTimer = setTimeout(() => {
+    m.chooseTimer = null;
+    onTimeout();
+  }, total);
+}
+
+function clearChooseTimer() {
+  const m = state.match;
+  if (m && m.chooseTimer) { clearTimeout(m.chooseTimer); m.chooseTimer = null; }
+}
+
+// ===== QUESTION FLOW =====
+function askKickoffQuestion() {
+  const m = state.match;
+  m.state = 'question';
+  m.currentAction = 'kickoff';
+  m.currentQ = generateProblem(state.settings.difficulty);
+  showQuestion('SANTRA · İLK SORU', state.settings.difficulty);
+}
+
+function askDefenseQuestion() {
+  const m = state.match;
+  m.state = 'question';
+  m.currentAction = 'defense';
+  m.currentQ = generateProblem(state.settings.difficulty);
+  showQuestion('SAVUNMA · TOPU ÇAL', state.settings.difficulty);
+}
+
+function doDribble() {
+  const m = state.match;
+  clearChooseTimer();
+  sfx('kick');
+  m.currentAction = 'dribling';
+  m.state = 'question';
+  m.currentQ = generateProblem(state.settings.difficulty);
+  showQuestion('DRİBLİNG · 1 BÖLGE İLERİ', state.settings.difficulty);
+}
+
+function doShot() {
+  const m = state.match;
+  clearChooseTimer();
+  const dist = m.pos > 0 ? (m.zones - m.pos + 1) : 99;
+  const lvl = diffFromOrder(diffOrder(state.settings.difficulty) + (dist - 1));
+  m.currentAction = 'sut';
+  m.state = 'question';
+  m.currentQ = generateProblem(lvl);
+  showQuestion(`ŞUT · KALEDEN ${dist} BÖLGE`, lvl);
+}
+
+function startPass() {
+  const m = state.match;
+  clearChooseTimer();
+  m.state = 'pickPassTarget';
+  renderPanel();
+}
+
+function onPassTargetClick(target) {
+  const m = state.match;
+  clearChooseTimer();
+  $$('.field-cell').forEach(cell => cell.classList.remove('targetable'));
+  m.pendingPassTarget = target;
+  const dist = target - m.pos;
+  const lvl = diffFromOrder(diffOrder(state.settings.difficulty) + (dist - 1));
+  m.currentAction = 'pas';
+  m.state = 'question';
+  m.currentQ = generateProblem(lvl);
+  showQuestion(`PAS · ${dist} BÖLGE ÖNE`, lvl);
+}
+
+// Converts Unicode math symbols to proper HTML superscripts/subscripts
+function formatMath(text) {
+  return text
+    .replace(/\^(\d+)/g, '<sup>$1</sup>')   // a^2 → a<sup>2</sup>
+    .replace(/²/g, '<sup>2</sup>')
+    .replace(/³/g, '<sup>3</sup>')
+    .replace(/⁴/g, '<sup>4</sup>')
+    .replace(/⁵/g, '<sup>5</sup>')
+    .replace(/⁶/g, '<sup>6</sup>')
+    // Subscripts — handle common combos used in log/formula text
+    .replace(/₁₀/g, '<sub>10</sub>')    // must be before ₁ alone
+    .replace(/₀/g, '<sub>0</sub>')
+    .replace(/₁/g, '<sub>1</sub>')
+    .replace(/₂/g, '<sub>2</sub>')
+    .replace(/₃/g, '<sub>3</sub>')
+    .replace(/₄/g, '<sub>4</sub>')
+    .replace(/₅/g, '<sub>5</sub>');
+}
+
+// Saat baskısı: rakip kaleye her adımda süre kısalır.
+// Kısalma oranı bölge sayısına göre:  3→%8, 5→%4, 8→%2  (diğerleri → %4 varsayılan)
+function zonePressure(pos) {
+  if (pos <= 0) return 1.0;
+  const zones = state.match ? state.match.zones : state.settings.zones;
+  const rateMap = { 3: 0.08, 5: 0.04, 8: 0.02 };
+  const rate = rateMap[zones] !== undefined ? rateMap[zones] : 0.04;
+  return Math.pow(1 - rate, pos - 1);
+}
+
+function showQuestion(context, level) {
+  const m = state.match;
+  m.answerBuffer = '';
+  m.answerSign = 1;
+  $('#q-difficulty').className = 'q-difficulty ' + level;
+  $('#q-difficulty').textContent = diffLabel(level);
+  $('#q-context').textContent = context;
+  $('#q-text').innerHTML = formatMath(m.currentQ.text) + ' = ?';
+  $('#q-answer').innerHTML = '&nbsp;';
+  $('#q-overlay').classList.add('active');
+
+  const base = diffTime(level) * 1000;
+  const pressure = zonePressure(m.pos);
+  const total = Math.round(base * pressure);
+
+  const bar = $('#q-timer-bar');
+  bar.style.transition = 'none';
+  bar.style.transform = 'scaleX(1)';
+  // getComputedStyle forces a reflow so the browser registers scaleX(1) before we animate
+  getComputedStyle(bar).transform; // eslint-disable-line no-unused-expressions
+  bar.style.transition = `transform ${total}ms linear`;
+  bar.style.transform = 'scaleX(0)';
+
+  if (m.qTimer) clearTimeout(m.qTimer);
+  m.qTimer = setTimeout(() => submitAnswer(true), total);
+}
+
+// Keyboard input for question screen
+function handleKeyDown(e) {
+  const m = state.match;
+  if (!m || m.state !== 'question') return;
+  if (e.key >= '0' && e.key <= '9') {
+    if (m.answerBuffer.length < 6) m.answerBuffer += e.key;
+    updateAnswerDisplay();
+  } else if (e.key === 'Backspace') {
+    m.answerBuffer = m.answerBuffer.slice(0, -1);
+    if (m.answerBuffer === '') m.answerSign = 1;
+    updateAnswerDisplay();
+  } else if (e.key === '-' || e.key === 'Dead') {
+    m.answerSign *= -1;
+    updateAnswerDisplay();
+  } else if (e.key === 'Enter' || e.key === ' ') {
+    if (m.answerBuffer !== '') submitAnswer(false);
+  }
+  e.preventDefault();
+}
+document.addEventListener('keydown', handleKeyDown);
+
+function updateAnswerDisplay() {
+  const m = state.match;
+  const display = m.answerBuffer === '' ? '&nbsp;' : (m.answerSign < 0 ? '−' : '') + m.answerBuffer;
+  $('#q-answer').innerHTML = display;
+}
+
+$$('#numpad .numkey').forEach(k => {
+  k.addEventListener('click', () => {
+    const m = state.match;
+    if (!m || m.state !== 'question') return;
+    const act = k.dataset.act;
+    if (act === 'del') {
+      m.answerBuffer = m.answerBuffer.slice(0, -1);
+      if (m.answerBuffer === '') m.answerSign = 1;
+    } else if (act === 'neg') {
+      m.answerSign *= -1;
+    } else if (!act) {
+      if (m.answerBuffer.length < 6) m.answerBuffer += k.textContent.trim();
+    }
+    updateAnswerDisplay();
+  });
+});
+$('.numkey.action-ok').addEventListener('click', () => {
+  const m = state.match;
+  if (!m || m.state !== 'question') return;
+  if (m.answerBuffer === '') return;
+  submitAnswer(false);
+});
+
+function submitAnswer(timedOut) {
+  const m = state.match;
+  if (m.qTimer) { clearTimeout(m.qTimer); m.qTimer = null; }
+
+  let userAns = null;
+  if (!timedOut && m.answerBuffer !== '') {
+    userAns = parseInt(m.answerBuffer, 10) * m.answerSign;
+  }
+  const correct = !timedOut && userAns === m.currentQ.answer;
+
+  $('#q-overlay').classList.remove('active');
+
+  if (correct) {
+    sfx('correct');
+    onCorrectAnswer();
+  } else {
+    sfx('wrong');
+    if (m.currentAction === 'defense') {
+      showFaultChoice();
+    } else {
+      handleOffensiveFailure();
+    }
+  }
+}
+
+function showFaultChoice() {
+  const m = state.match;
+  m.state = 'fault';
+  $('#fault-overlay').classList.add('active');
+  const bar = $('#fault-bar');
+  bar.style.transition = 'none';
+  bar.style.transform = 'scaleX(1)';
+  requestAnimationFrame(() => {
+    bar.style.transition = `transform ${FAULT_TIME}ms linear`;
+    bar.style.transform = 'scaleX(0)';
+  });
+  if (m.faultTimer) clearTimeout(m.faultTimer);
+  m.faultTimer = setTimeout(() => resolveFault('skip'), FAULT_TIME);
+}
+
+function handleOffensiveFailure() {
+  const m = state.match;
+  m.possession = 'o';
+  m.pendingPassTarget = null;
+  endTurn();
+}
+
+function onCorrectAnswer() {
+  const m = state.match;
+  const act = m.currentAction;
+  if (act === 'kickoff') {
+    // Player wins kickoff + advances 1 zone toward opponent goal
+    m.possession = 'p';
+    m.pos = 1;
+    endTurn();
+  } else if (act === 'dribling') {
+    m.pos = Math.min(m.zones, m.pos + 1);
+    endTurn();
+  } else if (act === 'pas') {
+    m.pos = m.pendingPassTarget;
+    m.pendingPassTarget = null;
+    endTurn();
+  } else if (act === 'sut') {
+    resolveShot();
+  } else if (act === 'defense') {
+    m.possession = 'p';
+    m.pos = Math.min(m.zones, m.pos + 1);
+    endTurn();
+  }
+}
+
+// Called after every completed action.
+// Advances time, handles half/full/stoppage, then continues play.
+function endTurn() {
+  const m = state.match;
+  m.time += 5;
+  renderHUD();
+  if (m.state !== 'kickoff') m.state = 'choose';
+  renderField();
+  renderPanel();
+
+  // ── 1. YARI: 45. dakikada normal oyun sona erer ──────────────────
+  if (m.half === 1 && m.time >= 45) {
+    setTimeout(() => triggerHalfTime(), 500);
+    return;
+  }
+
+  // ── 2. YARI: 90. dakikada uzatma başlar (2 hamle) ────────────────
+  if (m.half === 2 && m.time >= FULL_TIME_MIN) {
+    if (m.stoppageLeft < 0) {
+      // stoppageLeft negatif = zaten tamamen bitti (olmamalı ama güvenlik)
+      setTimeout(() => triggerFullTime(), 500);
+      return;
+    }
+    if (m.stoppageLeft === 0) {
+      // İlk kez 90'a ulaşıldı → 2 uzatma hakkı ver, banner göster
+      m.stoppageLeft = 2;
+      renderHUD(); // "90+0'" göster
+      showBanner('half', 'UZATMA DAKİKALARI', '2 hamle kaldı!');
+      sfx('whistle');
+      setTimeout(() => {
+        hideBanner();
+        continueAfterEndTurn();
+      }, 2000);
+      return;
+    }
+    // Uzatma hakları devam ediyor: her endTurn'de bir tüket
+    m.stoppageLeft--;
+    renderHUD();
+    if (m.stoppageLeft === 0) {
+      // Son uzatma hamlesi de bitti → final düdüğü
+      setTimeout(() => triggerFullTime(), 500);
+      return;
+    }
+    // Hâlâ uzatma hakkı var, devam
+  }
+
+  continueAfterEndTurn();
+}
+
+function continueAfterEndTurn() {
+  const m = state.match;
+  if (m.possession === 'o') {
+    setTimeout(() => askDefenseQuestion(), 400);
+  } else if (m.state === 'kickoff') {
+    setTimeout(() => askKickoffQuestion(), 600);
+  }
+  // possession === 'p' ve state === 'choose': oyuncu aksiyon butonlarını görür
+}
+
+function triggerHalfTime() {
+  const m = state.match;
+  m.state = 'half';
+  stopMusic();
+  showBanner('half', 'DEVRE ARASI', `Skor: ${m.score.p} - ${m.score.o}`);
+  sfx('whistle');
+  setTimeout(() => {
+    m.half = 2;
+    m.time = 45;
+    m.stoppageLeft = 0;
+    m.pos = 0;
+    m.cards.p = 0; m.cards.o = 0;
+    m.possession = (state.toss.picked === state.toss.result) ? 'o' : 'p';
+    hideBanner();
+    renderHUD();
+    renderField();
+    m.state = 'kickoff';
+    renderPanel();
+    startMatchMusic();
+    setTimeout(() => askKickoffQuestion(), 600);
+  }, 2500);
+}
+
+function triggerFullTime() {
+  const m = state.match;
+  m.state = 'full';
+  stopMusic();
+  let resultLine;
+  if (m.score.p > m.score.o) resultLine = '🏆 KAZANDIN!';
+  else if (m.score.p < m.score.o) resultLine = '😔 KAYBETTİN';
+  else resultLine = '🤝 BERABERLİK';
+  showBanner('full', 'MAÇ BİTTİ', `Skor: ${m.score.p} - ${m.score.o} · ${resultLine}`);
+  sfx('whistle');
+  setTimeout(() => { hideBanner(); showScreen('menu'); }, 4500);
+}
+
+function resolveShot() {
+  const m = state.match;
+  const dist = m.zones - m.pos + 1; // 1 = en yakın, m.zones = en uzak
+  // Zar tablosu 5 seviyeli — zones ne olursa olsun aynı oranlar, index'e göre seç
+  const tables = [
+    { goal: 20, post: 1, out: 1 },  // dist 1 (kale ağzı)
+    { goal: 18, post: 2, out: 2 },
+    { goal: 15, post: 3, out: 4 },
+    { goal: 11, post: 5, out: 6 },
+    { goal: 7,  post: 7, out: 8 },  // dist 5+ (uzak)
+  ];
+  const tableIdx = Math.min(dist - 1, 4);
+  const t = tables[tableIdx];
+  const r = ri(1, 22);
+  let outcome;
+  if (r <= t.goal) outcome = 'goal';
+  else if (r <= t.goal + t.post) outcome = 'post';
+  else outcome = 'out';
+
+  if (outcome === 'goal') {
+    m.score.p++;
+    renderHUD();
+    sfx('goal');
+    launchConfetti();
+    showBanner('goal', 'GOL!', `${state.ts.playerTeam.name}`);
+    setTimeout(() => {
+      hideBanner();
+      m.pos = 0;
+      m.possession = 'o';
+      m.state = 'kickoff';
+      endTurn();
+    }, 1800);
+  } else if (outcome === 'post') {
+    showBanner('post', 'DİREK!', 'Top geri döndü');
+    sfx('post');
+    setTimeout(() => {
+      hideBanner();
+      m.pos = Math.random() < 0.5 ? m.zones - 1 : m.zones;
+      m.possession = Math.random() < 0.5 ? 'p' : 'o';
+      endTurn();
+    }, 1500);
+  } else {
+    showBanner('miss', 'AUT!', 'Kaleci aut atışı yaptı');
+    sfx('whistle');
+    setTimeout(() => {
+      hideBanner();
+      m.pos = 0;          // kaleci topu orta sahaya atar
+      m.possession = 'o';
+      endTurn();
+    }, 1500);
+  }
+}
+
+$$('[data-fault]').forEach(b => {
+  b.addEventListener('click', () => resolveFault(b.dataset.fault));
+});
+
+function resolveFault(choice) {
+  const m = state.match;
+  if (m.state !== 'fault') return;
+  if (m.faultTimer) { clearTimeout(m.faultTimer); m.faultTimer = null; }
+  $('#fault-overlay').classList.remove('active');
+
+  if (choice === 'yellow') {
+    // Foul: time does NOT advance; card; ball stays; ask defense again
+    m.cards.p++;
+    renderHUD();
+    if (m.cards.p >= 2) {
+      m.cards.p = 0;
+      renderHUD();
+      m.state = 'penalty';
+      renderPanel();
+      setTimeout(() => resolveOpponentPenalty(), 1500);
+      return;
+    }
+    m.state = 'choose';
+    renderField();
+    renderPanel();
+    setTimeout(() => askDefenseQuestion(), 500);
+  } else {
+    // Skip: ball advances 1 zone toward player goal, time progresses
+    m.pos -= 1;
+    if (m.pos < -m.zones) m.pos = -m.zones;
+    if (m.pos === -m.zones) {
+      m.time += 5;
+      renderHUD();
+      if (m.half === 1 && m.time >= 45) { m.time -= 5; resolveOpponentShotThenHalf(); return; }
+      if (m.half === 2 && m.time >= FULL_TIME_MIN) { m.time -= 5; resolveOpponentShotThenHalf(); return; }
+      renderField();
+      setTimeout(() => resolveOpponentShot(), 600);
+    } else {
+      endTurn();
+    }
+  }
+}
+
+// Special case: opponent reached shooting zone right as half/full time should trigger.
+function resolveOpponentShotThenHalf() {
+  const m = state.match;
+  renderField();
+  setTimeout(() => {
+    const r = ri(1, 22);
+    let outcome = r <= 20 ? 'goal' : r <= 21 ? 'post' : 'out';
+    if (outcome === 'goal') {
+      m.score.o++;
+      renderHUD();
+      sfx('opponentGoal');
+      showBanner('miss', 'RAKİP GOL ATTI!', state.ts.opponentTeam.name);
+    } else if (outcome === 'post') {
+      sfx('post');
+      showBanner('post', 'DİREK!', 'Rakip kaçırdı');
+    } else {
+      sfx('whistle');
+      showBanner('miss', 'AUT!', 'Top kalecide');
+    }
+    setTimeout(() => {
+      hideBanner();
+      m.time += 5;
+      if (m.half === 1 && m.time >= 45) { triggerHalfTime(); return; }
+      if (m.half === 2 && m.time >= FULL_TIME_MIN) { triggerFullTime(); return; }
+      renderHUD();
+      m.pos = 0; m.possession = 'p'; m.state = 'kickoff';
+      renderField(); renderPanel();
+      setTimeout(() => askKickoffQuestion(), 600);
+    }, 1800);
+  }, 600);
+}
+
+function resolveOpponentShot() {
+  const m = state.match;
+  const r = ri(1, 22);
+  let outcome;
+  if (r <= 20) outcome = 'goal';
+  else if (r <= 21) outcome = 'post';
+  else outcome = 'out';
+
+  if (outcome === 'goal') {
+    m.score.o++;
+    renderHUD();
+    sfx('opponentGoal');
+    showBanner('miss', 'RAKİP GOL ATTI!', state.ts.opponentTeam.name);
+    setTimeout(() => {
+      hideBanner();
+      m.pos = 0;
+      m.possession = 'p';
+      m.state = 'kickoff';
+      renderField();
+      renderPanel();
+      setTimeout(() => askKickoffQuestion(), 600);
+    }, 1800);
+  } else if (outcome === 'post') {
+    sfx('post');
+    showBanner('post', 'DİREK!', 'Top geri döndü');
+    setTimeout(() => {
+      hideBanner();
+      m.pos = Math.random() < 0.5 ? -(m.zones - 1) : -m.zones;
+      m.possession = Math.random() < 0.5 ? 'p' : 'o';
+      m.state = 'choose';
+      renderField();
+      renderPanel();
+      if (m.possession === 'o') setTimeout(() => askDefenseQuestion(), 400);
+    }, 1500);
+  } else {
+    sfx('whistle');
+    showBanner('miss', 'AUT!', 'Top kalecide');
+    setTimeout(() => {
+      hideBanner();
+      m.pos = -m.zones;
+      m.possession = 'p';
+      m.state = 'choose';
+      renderField();
+      renderPanel();
+    }, 1500);
+  }
+}
+
+function resolveOpponentPenalty() {
+  const m = state.match;
+  showBanner('miss', 'RAKİBE PENALTI!', '2. sarı kart → kırmızı');
+  setTimeout(() => {
+    hideBanner();
+    m.pos = -m.zones; // penalty spot in front of player's goal
+    renderField();
+    setTimeout(() => {
+      const r = ri(1, 22);
+      let outcome;
+      if (r <= 14) outcome = 'goal';
+      else if (r <= 18) outcome = 'post';
+      else outcome = 'out';
+
+      if (outcome === 'goal') {
+        m.score.o++;
+        renderHUD();
+        sfx('opponentGoal');
+        showBanner('miss', 'PENALTI GOL!', state.ts.opponentTeam.name);
+        setTimeout(() => {
+          hideBanner();
+          m.pos = 0;
+          m.possession = 'p';
+          m.state = 'kickoff';
+          renderField();
+          renderPanel();
+          setTimeout(() => askKickoffQuestion(), 600);
+        }, 1800);
+      } else if (outcome === 'post') {
+        sfx('post');
+        showBanner('post', 'DİREK!', 'Penaltı kaçtı');
+        setTimeout(() => {
+          hideBanner();
+          m.pos = Math.random() < 0.5 ? -(m.zones - 1) : -m.zones;
+          m.possession = Math.random() < 0.5 ? 'p' : 'o';
+          m.state = 'choose';
+          renderField();
+          renderPanel();
+          if (m.possession === 'o') setTimeout(() => askDefenseQuestion(), 400);
+        }, 1500);
+      } else {
+        sfx('whistle');
+        showBanner('miss', 'AUT!', 'Penaltı dışarı');
+        setTimeout(() => {
+          hideBanner();
+          m.pos = -5;
+          m.possession = 'p';
+          m.state = 'choose';
+          renderField();
+          renderPanel();
+        }, 1500);
+      }
+    }, 1000);
+  }, 2000);
+}
+
+function showBanner(kind, title, sub) {
+  const b = $('#event-banner');
+  b.className = 'event-banner active ' + (kind || '');
+  $('#event-title').textContent = title;
+  $('#event-sub').textContent = sub || '';
+}
+function hideBanner() {
+  $('#event-banner').className = 'event-banner';
+}
+
+// initial state
+showScreen('menu');
+
+</script>
+</body>
+</html>
