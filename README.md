@@ -53,7 +53,7 @@ Proje tamamen istemci taraflı (client-side) çalıştığı için herhangi bir 
 
 1.  Bu depoyu bilgisayarınıza indirin veya klonlayın:
     ```bash
-    git clone [https://github.com/kullanici-adiniz/mat-bol.git](https://github.com/kullanici-adiniz/mat-bol.git)
+    git clone [https://github.com/tolgahalilaltay/mat-bol.git](https://github.com/tolgahalilaltay/mat-bol.git)
     ```
 2.  Proje klasörüne gidin:
     ```bash
