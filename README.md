@@ -1,79 +1,174 @@
-# ⚽ Mat-Bol — Matematik Futbolu 🧮
+# ⚽ Mat-Bol — Math Football
 
-Mat-Bol, matematiksel zekanızı ve futbol stratejinizi bir araya getiren, tarayıcı tabanlı, dinamik ve eğlenceli bir single-page (tek sayfa) web oyunudur. Oyuncular, seçtikleri takımlarla sahaya çıkarak pas, şut ve dripling gibi futbol aksiyonlarını gerçekleştirmek için zamana karşı matematik sorularını doğru yanıtlamak zorundadır.
+> A single-file browser game where you score goals by solving math problems.
 
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+Mat-Bol is a zero-dependency, zero-install football game built entirely in one HTML file. Answer math questions to pass, dribble, and shoot — the harder the question, the better the chance of a goal. Designed for kids learning math, but the Champs League difficulty will challenge adults too.
 
 ---
 
-## 🌟 Öne Çıkan Özellikler
+## ✨ Features
 
-* **Akıcı ve Premium Arayüz:** Stadyum projektör atmosferi, hareketli saha çizgileri ve neon görsel efektlerle zenginleştirilmiş modern karanlık mod (Dark Mode) tasarımı.
-* **Gerçekçi Futbol Mekanikleri:** * **Yazı-Tura Atışı:** Maça kimin başlayacağını belirleyen interaktif yazı-tura ekranı.
-    * **Stratejik Aksiyonlar:** Top sizdeyken Pas, Şut veya Dripling yapma; savunmadayken ise rakibin atağını kesme hamleleri.
-    * **Dinamik Saha ve Top:** Topun sahada gerçek zamanlı konum değiştirmesi ve pozisyona göre parlayan hedef bölgeler.
-* **Gelişmiş Matematik Motoru:**
-    * **5 Farklı Zorluk Seviyesi:** *Çok Kolay, Kolay, Orta, Zor, Çok Zor* ve en üst seviye olan *Champs League*.
-    * **Zamana Karşı Yarış:** Her soru için zorluk derecesine göre dinamik olarak azalan süre barı.
-    * **Dahili Numaratör (Numpad):** Mobil cihazlarla tam uyumlu, negatif sayı desteği ve silme özellikli şık klavye arayüzü.
-* **Ses Efektleri ve Kontroller:** Maç içi heyecanı artıran ses efektleri (düdük, direk sesi vb.) ve açılıp kapatılabilir ses ayarları paneli.
-* **Mobil Öncelikli (Responsive) Tasarım:** Mobil cihazlarda taşma yapmayan, güvenli alan (viewport-fit=cover) ve tam ekran odaklı kompakt yapı (maksimum 480px genişlik).
+### Gameplay
+- **Three actions per turn:** Pass, Shot, Dribble — each triggers a math question
+- **Zone-based field** — the ball moves through zones; get it in front of goal and shoot
+- **Shot dice system** — shooting from closer zones gives better odds (20/1/1 at zone 5, down to 7/7/8 from zone 1)
+- **Defensive steal** — when the opponent has the ball, answer correctly to steal it and advance
+- **Yellow card / Skip system** — on a defensive mistake, choose a foul (no time loss) or skip (ball advances)
+- **Two yellows = red card** → opponent gets a penalty
+- **Halftime** at 45', **stoppage time** in the 2nd half (2 extra moves at 90')
+- **Time pressure near goal** — the timer shrinks as you approach the opponent's goal (3 zones: −8%/zone, 5 zones: −4%/zone, 8 zones: −2%/zone)
+
+### Difficulty Levels
+| Level | Scope | Example |
+|-------|-------|---------|
+| Very Easy | 1st grade — single-digit addition | `3 + 4 = ?` |
+| Easy | 2nd–3rd grade — two-digit ±, ×2/3/5/10 | `13 + 24 = ?` · `5 × 7 = ?` |
+| Medium | 4th–5th grade — full times tables, division | `7 × 8 = ?` · `72 ÷ 9 = ?` |
+| Hard | Middle school — squares, order of operations, negatives | `7² − 15 = ?` |
+| Very Hard | High school — cubes, (a+b)², factorials | `(12+8)² = ?` · `5! = ?` |
+| ⚽ Champs League | University prep — 19 question types | `log₂(32) = ?` · `C(7,3) = ?` · `F(10) = ?` |
+
+**Champs League** includes: logarithms, combinations, permutations, factorials, polynomial evaluation, Gauss sums, trigonometry (integer results), Fibonacci, arithmetic/geometric sequences, sum of squares, LCM, nested powers, modular arithmetic, and chained expressions. No two consecutive questions of the same type.
+
+### Settings
+- **Difficulty** (6 levels)
+- **Zones per half** — 3 (fast), 5 (standard), 8 (long game)
+- **Time multiplier** — 1×, 1.5×, 2×
+- **Music** toggle
+- **Sound effects** toggle
+- **Language** — English / Türkçe
+
+### Teams
+Eight fictional clubs that mock real football teams:
+
+| Club | Mocks | Color |
+|------|-------|-------|
+| Hyperbool | Liverpool | 🔴 Red |
+| Napolygon | Napoli (SSC) | 🔵 Blue |
+| ArcSenal | Arsenal | 🟡 Yellow |
+| Al Gebra | Al Nassr / Al Ahly | 🟢 Green |
+| Fiborentina | Fiorentina | 🟣 Purple |
+| Real Module | Real Madrid | ⚪ Silver |
+| Gammatasaray | Galatasaray | 🟠 Orange |
+| AtaLambda | Atalanta | ⚫ Black |
+
+### Audio
+- **174 BPM soundtrack** — two original 8-bit tracks (menu + match) composed with Web Audio API, no external files
+- **Sound effects** — goal fanfare, whistle, post clang, kick thump, coin flip, correct/wrong answer cues — all synthesised in-browser
+
+### Visual
+- Stadium night atmosphere with floodlight gradients
+- Bebas Neue display font
+- Shield-shaped team crests
+- Animated grass stripes, centre circle, zone dividers
+- 3D-press action buttons
+- Confetti on goals (canvas, 80 particles)
+- Shake animation on wrong answers
+
+### In-match controls
+- 🏠 **Home button** — quit confirmation overlay, timers pause while deciding
+- 🔊 **Sound button** — instant music + SFX toggle without leaving the match
 
 ---
 
-## 🎮 Oyun Nasıl Oynanır?
+## 🚀 Getting Started
 
-1.  **Ayarları Yapın:** Ana menüden zorluk seviyesini seçin ve ses ayarlarını kontrol edin.
-2.  **Takımınızı Seçin:** Kendi takımınızı ve rakibinizi belirleyin.
-3.  **Yazı-Tura Atın:** Maçın ilk vuruşunu (Kickoff) kimin yapacağını belirlemek için yazı-tura atışını gerçekleştirin.
-4.  **Hücum ve Savunma:**
-    * **Hücumda:** Top sizdeyken yapmak istediğiniz aksiyonu (Pas/Dripling/Şut) seçin ve karşınıza çıkan matematik sorusunu süre bitmeden doğru cevaplayın. Doğru cevap topu ileri taşır veya gol olmasını sağlar!
-    * **Savunmada:** Rakip takım atağa kalktığında, savunma sorusunu doğru çözerek topu kapmaya ve kalenizi korumaya çalışın.
-5.  **Penaltı ve Direk Pozisyonları:** Maçın gidişatına göre penaltı atışları veya direkten dönen toplarla oyunun heyecanını yaşayın.
+No build step. No server. No dependencies.
 
----
+```bash
+# Clone
+git clone https://github.com/tolgahalilaltay/mat-bol.git
 
-## 🛠️ Kullanılan Teknolojiler
+# Open
+open index.html
+```
 
-Oyun, herhangi bir harici kütüphane veya framework (React, Vue, jQuery vb.) kullanılmadan **Pure Vanilla Stack** ile geliştirilmiştir:
+Or just **download `index.html`** and open it in any modern browser.
 
-* **Semantik HTML5:** Oyun ekranları arası geçiş ve oyun yapısının kurgulanması.
-* **Modern CSS3:** `CSS Variables` (Değişkenler), `radial-gradient` atmosfer efektleri, `clip-path` ile dinamik takım logoları ve akıcı `keyframes` animasyonları.
-* **Modern JavaScript (ES6+):** Durum yönetimi (State management), dinamik soru üretme algoritması, zamanlayıcılar (`setTimeout`/`setInterval`) ve oyun içi mantıksal döngüler.
-* **Google Fonts:** Projede esnek ve güçlü bir tipografi için *Bebas Neue* ve *DM Sans* fontları kullanılmıştır.
+Works on desktop and mobile. Keyboard supported: number keys, `Backspace`, `-` for negative, `Enter` / `Space` to confirm.
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma
+## 🏗️ Architecture
 
-Proje tamamen istemci taraflı (client-side) çalıştığı için herhangi bir sunucu kurulumuna veya bağımlılık yüklemesine gerek yoktur.
+Everything lives in a single `index.html` file (~3 200 lines):
 
-1.  Bu depoyu bilgisayarınıza indirin veya klonlayın:
-    ```bash
-    git clone [https://github.com/tolgahalilaltay/mat-bol.git](https://github.com/tolgahalilaltay/mat-bol.git)
-    ```
-2.  Proje klasörüne gidin:
-    ```bash
-    cd mat-bol
-    ```
-3.  `index.html` dosyasını herhangi bir modern web tarayıcısında (Chrome, Edge, Safari, Firefox vb.) çift tıklayarak açın ve oynamaya başlayın!
+```
+index.html
+├── <style>          CSS variables, layout, animations
+├── <body>           Five screens: menu, settings, team-select, coin-toss, match
+└── <script>
+    ├── TEAMS        8 clubs with colours
+    ├── TRANSLATIONS EN/TR string table + t(key, vars) helper
+    ├── Music engine Web Audio API — two 174 BPM tracks, procedural
+    ├── SFX engine   Web Audio API — 8 synthesised effects
+    ├── Confetti     Canvas particle system
+    ├── Game state   Single `state` object
+    ├── Math engine  generateProblem(level) — 6 difficulty tiers, 19 Champs League types
+    ├── Field render buildField() — dynamic zone count, CSS grid
+    └── Match logic  endTurn(), resolveShot(), resolveFault(), triggerHalfTime(), …
+```
+
+### Key Design Decisions
+
+**Single file** — the whole game is portable. Share it as an email attachment, host it on GitHub Pages, or drop it on a USB stick.
+
+**No external assets** — fonts load from Google Fonts (optional); music and sound are generated by the Web Audio API at runtime. The game works fully offline if the font is already cached.
+
+**Procedural audio** — square/triangle/sawtooth oscillators + noise buffers give a genuine 8-bit sound without bundling any audio files.
+
+**Dynamic zones** — `buildField()` rebuilds the field DOM whenever a match starts, so 3/5/8-zone modes share the same codebase. Shot dice tables scale by index (not by zone count) so the probability curve stays the same regardless of field length.
+
+**i18n via `t(key)`** — all user-visible strings go through a translation lookup. Switching language calls `applyLang()` which walks `[data-i18n]` elements and updates `textContent` in one pass.
 
 ---
 
-## 📝 Lisans
+## 🎮 Controls
 
-Bu proje **MIT Lisansı** altında lisanslanmıştır. Daha fazla bilgi için `LICENSE` dosyasına göz atabilirsiniz.
+| Input | Action |
+|-------|--------|
+| `0`–`9` | Enter digits |
+| `Backspace` | Delete last digit |
+| `-` | Toggle negative sign |
+| `Enter` / `Space` | Confirm answer |
+| 🏠 button | Quit match (with confirmation) |
+| 🔊 button | Toggle music / SFX in-match |
 
 ---
 
-## 💡 Katkıda Bulunma
+## 📋 Roadmap
 
-Projeyi daha da geliştirmek için katkılarınızı bekliyoruz!
-1. Bu depoyu fork edin.
-2. Yeni bir özellik veya hata düzeltmesi için bir dal (branch) açın (`git checkout -b yeni-ozellik`).
-3. Değişikliklerinizi taahhüt edin (`git commit -am 'Yeni özellik eklendi'`).
-4. Dalınızı push edin (`git push origin yeni-ozellik`).
-5. Bir Çekme İsteği (Pull Request) oluşturun.
+- [ ] Career mode
+- [ ] Online multiplayer
+- [ ] Player sprite animations (8-bit pixel art)
+- [ ] PWA / installable on iOS & Android
+- [ ] High score persistence (localStorage)
+- [ ] More Champs League question types (modular arithmetic sequences, sigma notation)
+
+---
+
+## 🛠️ Customisation
+
+All game constants are at the top of the `<script>` tag:
+
+```js
+const TEAMS = [ ... ];          // add/edit clubs
+const FULL_TIME_MIN = 90;       // change match length
+const FAULT_TIME = 2000;        // ms to show Skip/Yellow overlay
+```
+
+To add a language, extend the `TR` object and add a button to the settings grid:
+
+```js
+TR.de = {
+  tagline: '⚽ Mathe Fußball ⚽',
+  'menu.single': '⚽ Einzelspiel',
+  // ...
+};
+```
+
+---
+
+## 📄 Licence
+
+MIT — do whatever you like with it.
