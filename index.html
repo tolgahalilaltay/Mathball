@@ -568,7 +568,7 @@ body {
 .field-wrap { position: relative; }
 
 .field {
-  height: 114px;
+  height: 162px;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
@@ -618,9 +618,9 @@ body {
   /* No border-right on cells — cleaner look */
 }
 
-/* Very subtle zone dividers */
+/* Zone dividers — belirgin çizgiler */
 .field-cell + .field-cell {
-  border-left: 1px solid rgba(255,255,255,0.07);
+  border-left: 1px solid rgba(255,255,255,0.28);
 }
 
 .field-cell.goal {
@@ -987,7 +987,7 @@ body {
 
 /* Small screens */
 @media (max-height: 640px) {
-  .field { height: 90px; }
+  .field { height: 120px; }
   .ball  { width: 18px; height: 18px; }
   .logo  { font-size: clamp(56px, 14vw, 88px); }
   .tagline { margin-bottom: 26px; }
@@ -2466,7 +2466,7 @@ function renderPanel() {
 
     const pas = document.createElement('button');
     pas.className = 'action-btn pas';
-    pas.innerHTML = `<span class="icon">⇢</span><span class="label">PAS</span><span class="meta">hedef seç</span>`;
+    pas.innerHTML = `<span class="icon">⇢</span><span class="label">${t('action.pass')}</span><span class="meta">${t('action.pass.meta')}</span>`;
     if (!canPass) pas.disabled = true;
     pas.addEventListener('click', () => startPass());
     row.appendChild(pas);
@@ -2474,14 +2474,14 @@ function renderPanel() {
     const sut = document.createElement('button');
     sut.className = 'action-btn sut';
     const shotDiff = canShoot ? diffFromOrder(diffOrder(state.settings.difficulty) + (distToGoal - 1)) : null;
-    sut.innerHTML = `<span class="icon">⚽</span><span class="label">ŞUT</span><span class="meta">${canShoot ? diffLabel(shotDiff) : 'çok uzak'}</span>`;
+    sut.innerHTML = `<span class="icon">⚽</span><span class="label">${t('action.shot')}</span><span class="meta">${canShoot ? diffLabel(shotDiff) : t('action.shot.far')}</span>`;
     if (!canShoot) sut.disabled = true;
     sut.addEventListener('click', () => doShot());
     row.appendChild(sut);
 
     const drb = document.createElement('button');
     drb.className = 'action-btn dribling';
-    drb.innerHTML = `<span class="icon">⤳</span><span class="label">DRİBLİNG</span><span class="meta">${diffLabel(state.settings.difficulty)}</span>`;
+    drb.innerHTML = `<span class="icon">⤳</span><span class="label">${t('action.drib')}</span><span class="meta">${diffLabel(state.settings.difficulty)}</span>`;
     if (m.pos === z) drb.disabled = true;
     drb.addEventListener('click', () => doDribble());
     row.appendChild(drb);
@@ -2489,7 +2489,6 @@ function renderPanel() {
     panel.appendChild(row);
 
     startChooseTimer(() => {
-      // Süre doldu — geçerli aksiyonlardan rastgele birini otomatik seç
       if (m.state !== 'choose' || m.possession !== 'p') return;
       const valid = [];
       if (m.pos < 5) valid.push('dribling');
@@ -2497,35 +2496,32 @@ function renderPanel() {
       if (canPass) valid.push('pas');
       if (valid.length === 0) return;
       const pick = valid[Math.floor(Math.random() * valid.length)];
-
-      // clearChooseTimer burada çağrılmaz — zaten süresi doldu, timer yok.
-      // Doğrudan state geçişi yap:
       if (pick === 'dribling') {
         sfx('kick');
         m.currentAction = 'dribling';
         m.state = 'question';
         m.currentQ = generateProblem(state.settings.difficulty);
-        showQuestion('DRİBLİNG · OTOMATİK', state.settings.difficulty);
+        showQuestion(t('q.drib.auto'), state.settings.difficulty);
       } else if (pick === 'sut') {
         const dist = m.pos > 0 ? (5 - m.pos + 1) : 1;
         const lvl = diffFromOrder(diffOrder(state.settings.difficulty) + (dist - 1));
         m.currentAction = 'sut';
         m.state = 'question';
         m.currentQ = generateProblem(lvl);
-        showQuestion(`ŞUT · OTOMATİK · KALEDEN ${dist} BÖLGE`, lvl);
+        showQuestion(t('q.shot.auto', {n: dist}), lvl);
       } else {
         m.pendingPassTarget = Math.min(m.zones, m.pos + 1);
         m.currentAction = 'pas';
         m.state = 'question';
         m.currentQ = generateProblem(state.settings.difficulty);
-        showQuestion('PAS · OTOMATİK · 1 BÖLGE ÖNE', state.settings.difficulty);
+        showQuestion(t('q.pass.auto'), state.settings.difficulty);
       }
     });
   }
   else if (m.state === 'pickPassTarget') {
     const info = document.createElement('div');
     info.className = 'info-card';
-    info.innerHTML = `<div class="small">PAS — Hedef Bölge</div><div class="big">İLERİDE BİR BÖLGE SEÇ</div>`;
+    info.innerHTML = `<div class="small">${t('panel.pass.label')}</div><div class="big">${t('panel.pass.big')}</div>`;
 
     const timerWrap = document.createElement('div');
     timerWrap.className = 'choose-timer-wrap';
@@ -2556,16 +2552,14 @@ function renderPanel() {
   else if (m.state === 'kickoff') {
     const info = document.createElement('div');
     info.className = 'info-card';
-    info.innerHTML = `<div class="small">SANTRA</div><div class="big">İLK SORU GELİYOR…</div>`;
+    info.innerHTML = `<div class="small">${t('panel.kickoff.label')}</div><div class="big">${t('panel.kickoff.big')}</div>`;
     panel.appendChild(info);
   }
   else if (m.possession === 'o' && (m.state === 'choose' || m.state === 'defense')) {
     const info = document.createElement('div');
     info.className = 'info-card';
-    info.innerHTML = `<div class="small">SAVUNMA</div><div class="big">TOPU AL!</div>`;
+    info.innerHTML = `<div class="small">${t('panel.def.label')}</div><div class="big">${t('panel.def.big')}</div>`;
     panel.appendChild(info);
-    // Note: askDefenseQuestion is always called explicitly by the caller (endTurn / resolveFault),
-    // not from here, to avoid double-fire.
   }
   else if (m.state === 'half' || m.state === 'full') {
     // nothing
@@ -2573,7 +2567,7 @@ function renderPanel() {
   else if (m.state === 'penalty') {
     const info = document.createElement('div');
     info.className = 'info-card';
-    info.innerHTML = `<div class="small">2. SARI → KIRMIZI</div><div class="big">RAKİBE PENALTI!</div>`;
+    info.innerHTML = `<div class="small">${t('panel.pen.label')}</div><div class="big">${t('panel.pen.big')}</div>`;
     panel.appendChild(info);
   }
 }
@@ -2607,7 +2601,7 @@ function askKickoffQuestion() {
   m.state = 'question';
   m.currentAction = 'kickoff';
   m.currentQ = generateProblem(state.settings.difficulty);
-  showQuestion('SANTRA · İLK SORU', state.settings.difficulty);
+  showQuestion(t('q.kickoff'), state.settings.difficulty);
 }
 
 function askDefenseQuestion() {
@@ -2615,7 +2609,7 @@ function askDefenseQuestion() {
   m.state = 'question';
   m.currentAction = 'defense';
   m.currentQ = generateProblem(state.settings.difficulty);
-  showQuestion('SAVUNMA · TOPU ÇAL', state.settings.difficulty);
+  showQuestion(t('q.defense'), state.settings.difficulty);
 }
 
 function doDribble() {
@@ -2625,7 +2619,7 @@ function doDribble() {
   m.currentAction = 'dribling';
   m.state = 'question';
   m.currentQ = generateProblem(state.settings.difficulty);
-  showQuestion('DRİBLİNG · 1 BÖLGE İLERİ', state.settings.difficulty);
+  showQuestion(t('q.dribble'), state.settings.difficulty);
 }
 
 function doShot() {
@@ -2636,7 +2630,7 @@ function doShot() {
   m.currentAction = 'sut';
   m.state = 'question';
   m.currentQ = generateProblem(lvl);
-  showQuestion(`ŞUT · KALEDEN ${dist} BÖLGE`, lvl);
+  showQuestion(t('q.shot',{n:dist}), lvl);
 }
 
 function startPass() {
@@ -2656,7 +2650,7 @@ function onPassTargetClick(target) {
   m.currentAction = 'pas';
   m.state = 'question';
   m.currentQ = generateProblem(lvl);
-  showQuestion(`PAS · ${dist} BÖLGE ÖNE`, lvl);
+  showQuestion(t('q.pass',{n:dist}), lvl);
 }
 
 // Converts Unicode math symbols to proper HTML superscripts/subscripts
@@ -2863,7 +2857,7 @@ function endTurn() {
       // İlk kez 90'a ulaşıldı → 2 uzatma hakkı ver, banner göster
       m.stoppageLeft = 2;
       renderHUD(); // "90+0'" göster
-      showBanner('half', 'UZATMA DAKİKALARI', '2 hamle kaldı!');
+      showBanner('half', t('banner.stoppage'), t('banner.stoppage.sub', {n: 2}));
       sfx('whistle');
       setTimeout(() => {
         hideBanner();
@@ -2899,7 +2893,7 @@ function triggerHalfTime() {
   const m = state.match;
   m.state = 'half';
   stopMusic();
-  showBanner('half', 'DEVRE ARASI', `Skor: ${m.score.p} - ${m.score.o}`);
+  showBanner('half', t('banner.half'), t('banner.half.sub', {p: m.score.p, o: m.score.o}));
   sfx('whistle');
   setTimeout(() => {
     m.half = 2;
@@ -2923,10 +2917,10 @@ function triggerFullTime() {
   m.state = 'full';
   stopMusic();
   let resultLine;
-  if (m.score.p > m.score.o) resultLine = '🏆 KAZANDIN!';
-  else if (m.score.p < m.score.o) resultLine = '😔 KAYBETTİN';
-  else resultLine = '🤝 BERABERLİK';
-  showBanner('full', 'MAÇ BİTTİ', `Skor: ${m.score.p} - ${m.score.o} · ${resultLine}`);
+  if (m.score.p > m.score.o) resultLine = t('banner.win');
+  else if (m.score.p < m.score.o) resultLine = t('banner.lose');
+  else resultLine = t('banner.draw');
+  showBanner('full', t('banner.full'), t('banner.score', {p: m.score.p, o: m.score.o}) + resultLine);
   sfx('whistle');
   setTimeout(() => { hideBanner(); showScreen('menu'); }, 4500);
 }
@@ -2943,11 +2937,11 @@ function resolveShot() {
     { goal: 7,  post: 7, out: 8 },  // dist 5+ (uzak)
   ];
   const tableIdx = Math.min(dist - 1, 4);
-  const t = tables[tableIdx];
+  const dice = tables[tableIdx];
   const r = ri(1, 22);
   let outcome;
-  if (r <= t.goal) outcome = 'goal';
-  else if (r <= t.goal + t.post) outcome = 'post';
+  if (r <= dice.goal) outcome = 'goal';
+  else if (r <= dice.goal + dice.post) outcome = 'post';
   else outcome = 'out';
 
   if (outcome === 'goal') {
@@ -2955,7 +2949,7 @@ function resolveShot() {
     renderHUD();
     sfx('goal');
     launchConfetti();
-    showBanner('goal', 'GOL!', `${state.ts.playerTeam.name}`);
+    showBanner('goal', t('banner.goal'), `${state.ts.playerTeam.name}`);
     setTimeout(() => {
       hideBanner();
       m.pos = 0;
@@ -2964,7 +2958,7 @@ function resolveShot() {
       endTurn();
     }, 1800);
   } else if (outcome === 'post') {
-    showBanner('post', 'DİREK!', 'Top geri döndü');
+    showBanner('post', t('banner.post'), t('banner.post.sub'));
     sfx('post');
     setTimeout(() => {
       hideBanner();
@@ -2973,7 +2967,7 @@ function resolveShot() {
       endTurn();
     }, 1500);
   } else {
-    showBanner('miss', 'AUT!', 'Kaleci aut atışı yaptı');
+    showBanner('miss', t('banner.aut'), t('banner.aut.sub'));
     sfx('whistle');
     setTimeout(() => {
       hideBanner();
@@ -3038,13 +3032,13 @@ function resolveOpponentShotThenHalf() {
       m.score.o++;
       renderHUD();
       sfx('opponentGoal');
-      showBanner('miss', 'RAKİP GOL ATTI!', state.ts.opponentTeam.name);
+      showBanner('miss', t('banner.opp.goal'), state.ts.opponentTeam.name);
     } else if (outcome === 'post') {
       sfx('post');
-      showBanner('post', 'DİREK!', 'Rakip kaçırdı');
+      showBanner('post', t('banner.post'), t('banner.opp.post'));
     } else {
       sfx('whistle');
-      showBanner('miss', 'AUT!', 'Top kalecide');
+      showBanner('miss', t('banner.aut'), t('banner.opp.aut'));
     }
     setTimeout(() => {
       hideBanner();
@@ -3071,7 +3065,7 @@ function resolveOpponentShot() {
     m.score.o++;
     renderHUD();
     sfx('opponentGoal');
-    showBanner('miss', 'RAKİP GOL ATTI!', state.ts.opponentTeam.name);
+    showBanner('miss', t('banner.opp.goal'), state.ts.opponentTeam.name);
     setTimeout(() => {
       hideBanner();
       m.pos = 0;
@@ -3083,7 +3077,7 @@ function resolveOpponentShot() {
     }, 1800);
   } else if (outcome === 'post') {
     sfx('post');
-    showBanner('post', 'DİREK!', 'Top geri döndü');
+    showBanner('post', t('banner.post'), t('banner.post.sub'));
     setTimeout(() => {
       hideBanner();
       m.pos = Math.random() < 0.5 ? -(m.zones - 1) : -m.zones;
@@ -3095,7 +3089,7 @@ function resolveOpponentShot() {
     }, 1500);
   } else {
     sfx('whistle');
-    showBanner('miss', 'AUT!', 'Top kalecide');
+    showBanner('miss', t('banner.aut'), t('banner.opp.aut'));
     setTimeout(() => {
       hideBanner();
       m.pos = -m.zones;
@@ -3109,7 +3103,7 @@ function resolveOpponentShot() {
 
 function resolveOpponentPenalty() {
   const m = state.match;
-  showBanner('miss', 'RAKİBE PENALTI!', '2. sarı kart → kırmızı');
+  showBanner('miss', t('banner.opp.pen'), t('banner.opp.pen.sub'));
   setTimeout(() => {
     hideBanner();
     m.pos = -m.zones; // penalty spot in front of player's goal
@@ -3125,7 +3119,7 @@ function resolveOpponentPenalty() {
         m.score.o++;
         renderHUD();
         sfx('opponentGoal');
-        showBanner('miss', 'PENALTI GOL!', state.ts.opponentTeam.name);
+        showBanner('miss', t('banner.pen.goal'), state.ts.opponentTeam.name);
         setTimeout(() => {
           hideBanner();
           m.pos = 0;
@@ -3137,7 +3131,7 @@ function resolveOpponentPenalty() {
         }, 1800);
       } else if (outcome === 'post') {
         sfx('post');
-        showBanner('post', 'DİREK!', 'Penaltı kaçtı');
+        showBanner('post', t('banner.post'), t('banner.pen.post'));
         setTimeout(() => {
           hideBanner();
           m.pos = Math.random() < 0.5 ? -(m.zones - 1) : -m.zones;
@@ -3149,7 +3143,7 @@ function resolveOpponentPenalty() {
         }, 1500);
       } else {
         sfx('whistle');
-        showBanner('miss', 'AUT!', 'Penaltı dışarı');
+        showBanner('miss', t('banner.aut'), t('banner.pen.aut'));
         setTimeout(() => {
           hideBanner();
           m.pos = -5;
@@ -3173,8 +3167,21 @@ function hideBanner() {
   $('#event-banner').className = 'event-banner';
 }
 
+$$('[data-lang]').forEach(b => {
+  b.addEventListener('click', () => {
+    $$('[data-lang]').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.settings.lang = b.dataset.lang;
+    applyLang();
+    if (state.screen === 'teamselect') {
+      $('#team-stage').textContent = state.ts.stage === 'player' ? t('team.your') : t('team.opp');
+    }
+  });
+});
+
 // initial state
 showScreen('menu');
+applyLang();
 
 </script>
 </body>
